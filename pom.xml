@@ -14,7 +14,7 @@
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
   <name>${project.artifactId}</name>
-  <description>The plugin collect informations for support cases</description>
+  <description>The plugin collect informations for support cases.</description>
 
   <dependencies>
 

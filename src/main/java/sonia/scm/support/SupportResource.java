@@ -33,16 +33,29 @@ package sonia.scm.support;
 
 //~--- non-JDK imports --------------------------------------------------------
 
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Closeables;
 import com.google.inject.Inject;
+
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
+
+import sonia.scm.security.Role;
+import sonia.scm.store.Blob;
 
 //~--- JDK imports ------------------------------------------------------------
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 
 /**
  *
@@ -51,6 +64,11 @@ import javax.ws.rs.core.MediaType;
 @Path("plugins/support")
 public class SupportResource
 {
+
+  /** Field description */
+  private static final String MEDIA_TYPE_ZIP = "application/zip";
+
+  //~--- constructors ---------------------------------------------------------
 
   /**
    * Constructs ...
@@ -62,6 +80,10 @@ public class SupportResource
   public SupportResource(SupportManager supportManager)
   {
     this.supportManager = supportManager;
+
+    Subject subject = SecurityUtils.getSubject();
+
+    subject.checkRole(Role.ADMIN);
   }
 
   //~--- methods --------------------------------------------------------------
@@ -75,10 +97,10 @@ public class SupportResource
    * @throws IOException
    */
   @GET
-  @Produces(MediaType.TEXT_PLAIN)
-  public String createSupportFile() throws IOException
+  @Produces(MEDIA_TYPE_ZIP)
+  public Response createSupportFile() throws IOException
   {
-    return supportManager.collectSupportData().getId();
+    return createBlobResponse(supportManager.collectSupportData());
   }
 
   /**
@@ -91,7 +113,7 @@ public class SupportResource
    */
   @GET
   @Path("logging/disable")
-  @Produces(MediaType.TEXT_PLAIN)
+  @Produces(MEDIA_TYPE_ZIP)
   public String disableTraceLogging() throws IOException
   {
     return supportManager.disableTraceLogging().getId();
@@ -105,15 +127,94 @@ public class SupportResource
    *
    * @throws IOException
    */
-  @GET
+  @POST
   @Path("logging/enable")
-  @Produces(MediaType.TEXT_PLAIN)
-  public String enableTraceLogging() throws IOException
+  public Response enableTraceLogging() throws IOException
   {
     supportManager.enableTraceLogging();
 
-    return "OK";
+    return Response.noContent().build();
   }
+
+  /**
+   * Method description
+   *
+   *
+   * @param blob
+   *
+   * @return
+   */
+  private Response createBlobResponse(Blob blob)
+  {
+    //J-
+    return Response.ok(
+      new BlobStreamingOutput(blob)
+    )
+    .header(
+      "Content-Disposition", 
+      "attachment; filename=\"".concat(blob.getId()).concat(".zip\"")
+    )
+    .build();
+    //J+
+  }
+
+  //~--- inner classes --------------------------------------------------------
+
+  /**
+   * Class description
+   *
+   *
+   * @version        Enter version here..., 14/02/16
+   * @author         Enter your name here...
+   */
+  public static class BlobStreamingOutput implements StreamingOutput
+  {
+
+    /**
+     * Constructs ...
+     *
+     *
+     * @param blob
+     */
+    public BlobStreamingOutput(Blob blob)
+    {
+      this.blob = blob;
+    }
+
+    //~--- methods ------------------------------------------------------------
+
+    /**
+     * Method description
+     *
+     *
+     * @param output
+     *
+     * @throws IOException
+     * @throws WebApplicationException
+     */
+    @Override
+    public void write(OutputStream output)
+      throws IOException, WebApplicationException
+    {
+      InputStream input = null;
+
+      try
+      {
+        input = blob.getInputStream();
+        ByteStreams.copy(input, output);
+      }
+      finally
+      {
+        Closeables.close(input, true);
+      }
+    }
+
+    //~--- fields -------------------------------------------------------------
+
+    /** Field description */
+    private final Blob blob;
+  }
+
 
   //~--- fields ---------------------------------------------------------------
 

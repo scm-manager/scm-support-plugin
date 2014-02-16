@@ -48,6 +48,7 @@
 
   <resources>
     <script>/scm/scm.support.js</script>
+    <script>/scm/scm.support.loggingwindow.js</script>
   </resources>
 
 </plugin>
