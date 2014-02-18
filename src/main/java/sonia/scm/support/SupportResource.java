@@ -54,8 +54,13 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
@@ -114,9 +119,9 @@ public class SupportResource
   @GET
   @Path("logging/disable")
   @Produces(MEDIA_TYPE_ZIP)
-  public String disableTraceLogging() throws IOException
+  public Response disableTraceLogging() throws IOException
   {
-    return supportManager.disableTraceLogging().getId();
+    return createBlobResponse(supportManager.disableTraceLogging());
   }
 
   /**
@@ -134,6 +139,20 @@ public class SupportResource
     supportManager.enableTraceLogging();
 
     return Response.noContent().build();
+  }
+
+  /**
+   * Method description
+   *
+   *
+   * @return
+   */
+  @GET
+  @Path("logging")
+  @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+  public LoggingState loggingState()
+  {
+    return new LoggingState(supportManager.isTraceLoggingEnabled());
   }
 
   /**
@@ -213,6 +232,55 @@ public class SupportResource
 
     /** Field description */
     private final Blob blob;
+  }
+
+
+  /**
+   * Class description
+   *
+   *
+   * @version        Enter version here..., 14/02/18
+   * @author         Enter your name here...
+   */
+  @XmlRootElement
+  @XmlAccessorType(XmlAccessType.FIELD)
+  public static class LoggingState
+  {
+
+    /**
+     * Constructs ...
+     *
+     */
+    public LoggingState() {}
+
+    /**
+     * Constructs ...
+     *
+     *
+     * @param traceLoggingEnabled
+     */
+    public LoggingState(boolean traceLoggingEnabled)
+    {
+      this.traceLoggingEnabled = traceLoggingEnabled;
+    }
+
+    //~--- get methods --------------------------------------------------------
+
+    /**
+     * Method description
+     *
+     *
+     * @return
+     */
+    public boolean isTraceLoggingEnabled()
+    {
+      return traceLoggingEnabled;
+    }
+
+    //~--- fields -------------------------------------------------------------
+
+    /** Field description */
+    private boolean traceLoggingEnabled = false;
   }
 
 

@@ -33,21 +33,82 @@ Ext.ns('Sonia.support');
 
 Sonia.support.LoggingWindow = Ext.extend(Ext.Window, {
   
+  loggingEnabled: false,
+  
   initComponent: function(){
     var config = {
-      layout: 'fit',
-      width: 320,
-      height: 150,
       closable: true,
       resizable: false,
       plain: true,
       border: false,
       modal: true,
+      constrain: true,
+      constrainHeader: true,
+      minimizable: false,
+      maximizable: false,
+      stateful: false,
+      shim: true,
+      buttonAlign:"center",
+      width: 400,
+      height: 100,
+      minHeight: 80,
+      footer: true,
       title: 'Trace Logging',
-      items: []
+      items: [{
+        xtype: 'label',
+        text: 'Enable or disable trace logging'
+      }],
+      fbar: new Ext.Toolbar({
+        items: [{
+          text: 'Enable',
+          hideMode: 'offsets',
+          disabled: this.loggingEnabled,
+          scope: this,
+          handler: this.enableTraceLogging
+        },{
+          text: 'Disable',
+          hideMode: 'offsets',
+          disabled: ! this.loggingEnabled,
+          scope: this,
+          handler: this.disableTraceLogging
+        }],
+        enableOverflow: false
+      })
     };
     Ext.apply(this, Ext.apply(this.initialConfig, config));
     Sonia.support.LoggingWindow.superclass.initComponent.apply(this, arguments);
+  },
+  
+  enableTraceLogging: function(){
+    var el = this.el;
+    var tid = setTimeout( function(){el.mask('Loading ...');}, 100);
+    
+    Ext.Ajax.request({
+      url: restUrl + 'plugins/support/logging/enable',
+      method: 'POST',
+      scope: this,
+      success: function(response){
+        clearTimeout(tid);
+        el.unmask();
+        this.loggingEnabled = true;
+        this.close();
+      },
+      failure: function(result){
+        clearTimeout(tid);
+        el.unmask();
+        main.handleFailure(
+          result.status, 
+          'Error', 
+          'Could not enable trace logging'
+        );
+      }
+    });
+  },
+  
+  disableTraceLogging: function(){
+    this.loggingEnabled = false;
+    this.close();
+    window.open(restUrl + 'plugins/support/logging/disable');
   }
   
 });

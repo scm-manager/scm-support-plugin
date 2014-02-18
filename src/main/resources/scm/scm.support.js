@@ -44,7 +44,24 @@ loginCallbacks.push(function(){
       },{
         label: 'Trace Logging',
         fn: function(){
-          new Sonia.support.LoggingWindow().show();
+          Ext.Ajax.request({
+            url: restUrl + 'plugins/support/logging.json',
+            method: 'GET',
+            scope: this,
+            success: function(response){
+              var result = Ext.decode(response.responseText);
+              new Sonia.support.LoggingWindow({
+                loggingEnabled: result.traceLoggingEnabled
+              }).show();
+            },
+            failure: function(result){
+              main.handleFailure(
+                result.status, 
+                'Error', 
+                'Could not read trace logging state'
+              );
+            }
+          });
         }
       }]
     });
