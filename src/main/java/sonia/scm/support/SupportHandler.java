@@ -38,7 +38,6 @@ import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.OutputStreamAppender;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 
@@ -190,8 +189,7 @@ public class SupportHandler implements Closeable
   {
     if (zipOutputStream == null)
     {
-      zipOutputStream = new ZipOutputStream(getZipBlob().getOutputStream(),
-        Charsets.UTF_8);
+      zipOutputStream = new ZipOutputStream(getZipBlob().getOutputStream());
     }
 
     return zipOutputStream;
