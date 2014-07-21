@@ -111,11 +111,34 @@ public final class LoggingHandler
     for (String name : LOGGERNAMES)
     {
       Logger logger = lc.getLogger(name);
-
-      levelCache.put(logger, logger.getLevel());
-      logger.setLevel(Level.TRACE);
-      logger.addAppender(supportHandler.getOutputStreamAppender());
+      enableTraceLogging(logger);
     }
+    
+    // set log level for existing loggers
+    for ( Logger logger : lc.getLoggerList() )
+    {
+      String name = logger.getName();
+      boolean enableTrace = false;
+      for ( String n : LOGGERNAMES )
+      {
+        if ( name.startsWith(n) && ! name.equals(n) )
+        {
+          enableTrace = true;
+          break;
+        }
+      }
+      if ( enableTrace )
+      {
+        enableTraceLogging(logger);
+      }
+    }
+  }
+  
+  private void enableTraceLogging(Logger logger) throws IOException
+  {
+    levelCache.put(logger, logger.getLevel());
+    logger.setLevel(Level.TRACE);
+    logger.addAppender(supportHandler.getOutputStreamAppender());    
   }
 
   //~--- fields ---------------------------------------------------------------
