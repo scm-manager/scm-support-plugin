@@ -89,13 +89,16 @@ public final class LoggingHandler
   {
     for (Entry<Logger, Level> e : levelCache.entrySet())
     {
-      Logger logger = e.getKey();
-
-      logger.detachAppender(supportHandler.getOutputStreamAppender());
-      logger.setLevel(e.getValue());
+      e.getKey().setLevel(e.getValue());
     }
-
     levelCache.clear();
+    
+    LoggerContext lc = supportHandler.getLoggerContext();
+    for (String name : LOGGERNAMES)
+    {
+      Logger logger = lc.getLogger(name);
+      logger.detachAppender(supportHandler.getOutputStreamAppender());
+    }
   }
 
   /**
@@ -112,24 +115,28 @@ public final class LoggingHandler
     {
       Logger logger = lc.getLogger(name);
       enableTraceLogging(logger);
+      logger.addAppender(supportHandler.getOutputStreamAppender());
     }
     
     // set log level for existing loggers
     for ( Logger logger : lc.getLoggerList() )
     {
-      String name = logger.getName();
-      boolean enableTrace = false;
-      for ( String n : LOGGERNAMES )
+      if ( logger.getLevel() != null )
       {
-        if ( name.startsWith(n) && ! name.equals(n) )
+        String name = logger.getName();
+        boolean enableTrace = false;
+        for ( String n : LOGGERNAMES )
         {
-          enableTrace = true;
-          break;
+          if ( name.startsWith(n) && ! name.equals(n) )
+          {
+            enableTrace = true;
+            break;
+          }
         }
-      }
-      if ( enableTrace )
-      {
-        enableTraceLogging(logger);
+        if ( enableTrace )
+        {
+          enableTraceLogging(logger);
+        }
       }
     }
   }
@@ -138,7 +145,6 @@ public final class LoggingHandler
   {
     levelCache.put(logger, logger.getLevel());
     logger.setLevel(Level.TRACE);
-    logger.addAppender(supportHandler.getOutputStreamAppender());    
   }
 
   //~--- fields ---------------------------------------------------------------
