@@ -37,8 +37,7 @@ import com.google.common.io.Closeables;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import sonia.scm.plugin.ext.Extension;
+import sonia.scm.plugin.Extension;
 
 //~--- JDK imports ------------------------------------------------------------
 

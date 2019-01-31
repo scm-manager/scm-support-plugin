@@ -73,7 +73,7 @@ public final class SupportManager
   public SupportManager(BlobStoreFactory blobStoreFactory,
     Set<Collector> collectors)
   {
-    this.blobStore = blobStoreFactory.getBlobStore(NAME);
+    this.blobStore = blobStoreFactory.withName(NAME).build();
     this.collectors = collectors;
   }
 

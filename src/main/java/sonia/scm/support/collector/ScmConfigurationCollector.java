@@ -38,7 +38,7 @@ import com.google.common.io.Closeables;
 import com.google.inject.Inject;
 
 import sonia.scm.config.ScmConfiguration;
-import sonia.scm.plugin.ext.Extension;
+import sonia.scm.plugin.Extension;
 
 //~--- JDK imports ------------------------------------------------------------
 

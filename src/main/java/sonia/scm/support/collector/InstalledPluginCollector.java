@@ -35,9 +35,9 @@ package sonia.scm.support.collector;
 
 import com.google.inject.Inject;
 
+import sonia.scm.plugin.Extension;
 import sonia.scm.plugin.PluginInformation;
 import sonia.scm.plugin.PluginManager;
-import sonia.scm.plugin.ext.Extension;
 
 //~--- JDK imports ------------------------------------------------------------
 

@@ -38,10 +38,12 @@ import com.google.inject.Inject;
 import sonia.scm.SCMContext;
 import sonia.scm.SCMContextProvider;
 import sonia.scm.Type;
-import sonia.scm.plugin.ext.Extension;
+import sonia.scm.plugin.Extension;
 import sonia.scm.repository.RepositoryHandler;
 import sonia.scm.repository.RepositoryManager;
-import sonia.scm.store.StoreFactory;
+import sonia.scm.store.ConfigurationEntryStoreFactory;
+import sonia.scm.store.ConfigurationStoreFactory;
+import sonia.scm.store.DataStoreFactory;
 import sonia.scm.util.SystemUtil;
 
 //~--- JDK imports ------------------------------------------------------------
@@ -61,20 +63,15 @@ import java.util.TimeZone;
 public class SystemCollector extends WriterCollector
 {
 
-  /**
-   * Constructs ...
-   *
-   *
-   * @param repositoryManager
-   * @param storeFactory
-   */
   @Inject
   public SystemCollector(RepositoryManager repositoryManager,
-    StoreFactory storeFactory)
+                         ConfigurationStoreFactory configurationStoreFactory, ConfigurationEntryStoreFactory configurationEntryStoreFactory, DataStoreFactory dataStoreFactory)
   {
     super("system.txt");
     this.repositoryManager = repositoryManager;
-    this.storeFactory = storeFactory;
+    this.configurationStoreFactory = configurationStoreFactory;
+    this.configurationEntryStoreFactory = configurationEntryStoreFactory;
+    this.dataStoreFactory = dataStoreFactory;
   }
 
   //~--- methods --------------------------------------------------------------
@@ -93,7 +90,9 @@ public class SystemCollector extends WriterCollector
     writer.println("[version]");
     writer.append("Version: ").println(contextProvider.getVersion());
     writer.append("Stage: ").println(contextProvider.getStage());
-    writer.append("StoreFactory: ").println(storeFactory.getClass());
+    writer.append("ConfigurationStoreFactory: ").println(configurationStoreFactory.getClass());
+    writer.append("ConfigurationEntryStoreFactory: ").println(configurationEntryStoreFactory.getClass());
+    writer.append("DataStoreFactory: ").println(dataStoreFactory.getClass());
 
     writer.println();
     writer.println("[system]");
@@ -101,7 +100,7 @@ public class SystemCollector extends WriterCollector
     writer.append("Architecture: ").println(SystemUtil.getArch());
     writer.append("Java: ").append(System.getProperty("java.vendor"));
     writer.append("/").println(System.getProperty("java.version"));
-    writer.append("Container: ").println(SystemUtil.getServletContainer());
+//    writer.append("Container: ").println(SystemUtil.getServletContainer()); TODO
     writer.append("Locale: ").println(Locale.getDefault());
     writer.append("TimeZone: ").println(TimeZone.getDefault().getID());
     writer.println();
@@ -155,9 +154,9 @@ public class SystemCollector extends WriterCollector
 
   //~--- fields ---------------------------------------------------------------
 
-  /** Field description */
   private final RepositoryManager repositoryManager;
 
-  /** Field description */
-  private final StoreFactory storeFactory;
+  private final ConfigurationStoreFactory configurationStoreFactory;
+  private final ConfigurationEntryStoreFactory configurationEntryStoreFactory;
+  private final DataStoreFactory dataStoreFactory;
 }
