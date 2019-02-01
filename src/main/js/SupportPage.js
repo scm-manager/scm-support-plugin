@@ -77,6 +77,7 @@ class SupportPage extends React.Component<Props, State> {
         <p>
           <em>{t("scm-support-plugin.trace.warning")}</em>
         </p>
+        <br/>
         <Button color="warning" label={t("scm-support-plugin.trace.startButton")} disabled={!canStartTrace} action={this.startTrace}/>
         <DownloadButton displayName={t("scm-support-plugin.trace.stopButton")} url={!stopTraceLink? "": stopTraceLink.href}
                         disabled={!canStopTrace} onClick={this.stopTrace}/>
