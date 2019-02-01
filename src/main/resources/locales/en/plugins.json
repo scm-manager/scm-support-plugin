@@ -1,8 +1,10 @@
 {
   "scm-support-plugin": {
-    "root-page": {
-      "title": "Support",
-      "subtitle": "Gather support information for this SCM-Manager instance"
+    "title": "Support",
+    "subtitle": "Gather support information for this SCM-Manager instance",
+    "collect": {
+      "help": "Will give you everything you need to know and even more.",
+      "button": "Collect"
     },
     "primary-navigation": "Support"
   }

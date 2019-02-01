@@ -1,36 +1,34 @@
 //@flow
 import React from "react";
-import { translate } from "react-i18next";
-import { Page } from "@scm-manager/ui-components";
-import type { SupportLinks } from "./types";
+import {translate} from "react-i18next";
+import {DownloadButton, Page} from "@scm-manager/ui-components";
 
 type Props = {
-  link: string,
+  informationLink: string,
   // context props
   t: string => string
 };
 
-type State = {
-  links?: SupportLinks
-};
-
-class SupportPage extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      loading: true
-    };
-  }
-
+class SupportPage extends React.Component<Props> {
   render() {
-    const { t } = this.props;
+    const {t, informationLink} = this.props;
+
+    const informationPart = (
+      <>
+        <p>
+          {t("scm-support-plugin.collect.help")}
+        </p>
+        <br/>
+        <DownloadButton displayName={t("scm-support-plugin.collect.button")} url={informationLink}/>
+      </>);
 
     return (
       <Page
-        title={t("scm-support-plugin.root-page.title")}
-        subtitle={t("scm-support-plugin.root-page.subtitle")}
+        title={t("scm-support-plugin.title")}
+        subtitle={t("scm-support-plugin.subtitle")}
       >
-
+        <hr/>
+        {informationPart}
       </Page>
     );
   }
