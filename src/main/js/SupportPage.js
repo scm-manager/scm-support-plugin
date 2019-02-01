@@ -1,7 +1,7 @@
 //@flow
 import React from "react";
 import {translate} from "react-i18next";
-import {apiClient, Button, DownloadButton, Page} from "@scm-manager/ui-components";
+import {apiClient, Button, DownloadButton, Loading, Page} from "@scm-manager/ui-components";
 
 type Props = {
   informationLink?: string,
@@ -14,7 +14,8 @@ type State = {
   startTraceLink?: string,
   stopTraceLink?: string,
   startTraceSuccess: boolean,
-  startTraceFailed: boolean
+  startTraceFailed: boolean,
+  traceLoading: boolean
 }
 
 class SupportPage extends React.Component<Props, State> {
@@ -23,7 +24,10 @@ class SupportPage extends React.Component<Props, State> {
     super(props);
     this.state = {
       startTraceLink: undefined,
-      stopTraceLink: undefined
+      stopTraceLink: undefined,
+      startTraceSuccess: false,
+      startTraceFailed: false,
+      traceLoading: false
     }
   }
 
@@ -37,7 +41,6 @@ class SupportPage extends React.Component<Props, State> {
     apiClient.get(this.props.traceLink)
       .then(result => result.json())
       .then(traceLinks => {
-        console.log(traceLinks);
         this.setState({
           startTraceLink: traceLinks._links.startTrace,
           stopTraceLink: traceLinks._links.stopTrace
@@ -48,7 +51,7 @@ class SupportPage extends React.Component<Props, State> {
 
   render() {
     const {t, informationLink} = this.props;
-    const {startTraceLink, stopTraceLink} = this.state;
+    const {startTraceLink, stopTraceLink, traceLoading} = this.state;
 
     const message = this.createMessage();
 
@@ -65,8 +68,6 @@ class SupportPage extends React.Component<Props, State> {
     const canStartTrace = !!startTraceLink;
     const canStopTrace = !!stopTraceLink;
 
-    console.log("start:", canStartTrace, "stop:", canStopTrace);
-
     const tracePart = !!(startTraceLink || stopTraceLink) ? (
       <>
         <hr/>
@@ -80,7 +81,7 @@ class SupportPage extends React.Component<Props, State> {
         <DownloadButton displayName={t("scm-support-plugin.trace.stopButton")} url={!stopTraceLink? "": stopTraceLink.href}
                         disabled={!canStopTrace} onClick={this.stopTrace}/>
         <br/>
-      </>) : null;
+      </>) : traceLoading? (<Loading message={t("scm-support-plugin.trace.loading")}/>): null;
 
     return (
       <Page
@@ -97,16 +98,31 @@ class SupportPage extends React.Component<Props, State> {
   createMessage = () => {
     const {startTraceSuccess, startTraceFailed} = this.state;
     if (startTraceSuccess) {
-      return (<i>Success</i>); // TODO
+      return (this.createNotification("scm-support-plugin.trace.startSuccess"));
     } else if (startTraceFailed) {
-      return (<i>Failed</i>); // TODO
+      return (this.createNotification("scm-support-plugin.trace.startFailed"));
     }
     return null;
   };
 
+  createNotification = (messageKey: string) => {
+    if (this.state.startTraceFailed || this.state.startTraceSuccess) {
+      return (
+        <div className="notification is-info">
+          <button
+            className="delete"
+            onClick={() =>
+              this.setState({startTraceFailed: false, startTraceSuccess: false})
+            }
+          />
+          {this.props.t(messageKey)}
+        </div>
+      );
+    }
+  };
+
   startTrace = (e: Event) => {
     const {startTraceLink} = this.state;
-    console.log(startTraceLink);
     apiClient
       .post(startTraceLink.href, "")
       .then(result => {
@@ -120,19 +136,27 @@ class SupportPage extends React.Component<Props, State> {
         this.setState({
           startTraceFailed: true,
           startTraceSuccess: false
-        });
+        }, this.fetchTraceStatus);
       });
   };
 
   stopTrace = () => {
-    console.log("STOP");
     this.setState({
       startTraceFailed: false,
       startTraceSuccess: false,
-      stopTraceLink: undefined
+      stopTraceLink: undefined,
+      traceLoading: true
+    }, () => {
+      this.x();
     });
     return true;
   };
+
+  x = async () => {
+    setTimeout(function() {
+      this.fetchTraceStatus();
+    }.bind(this), 10000)
+  }
 }
 
 export default translate("plugins")(SupportPage);
