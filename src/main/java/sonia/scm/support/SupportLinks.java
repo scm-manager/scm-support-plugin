@@ -19,4 +19,19 @@ class SupportLinks {
     LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), SupportResource.class);
     return linkBuilder.method("createSupportFile").parameters().href();
   }
+
+  String createTraceStatusLink() {
+    LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), SupportResource.class);
+    return linkBuilder.method("loggingState").parameters().href();
+  }
+
+  String createStartTraceLink() {
+    LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), SupportResource.class);
+    return linkBuilder.method("enableTraceLogging").parameters().href();
+  }
+
+  String createStopTraceLink() {
+    LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), SupportResource.class);
+    return linkBuilder.method("disableTraceLogging").parameters().href();
+  }
 }

@@ -6,6 +6,12 @@
       "help": "Will give you everything you need to know and even more.",
       "button": "Collect"
     },
+    "trace": {
+      "help": "Switch logging to trace level and gather a lot of logs for a limited time. To do this, enable the trace. You will get the logs when you switch it off again.",
+      "warning": "Please keep in mind, that this may slow down this instance!",
+      "startButton": "Start",
+      "stopButton": "Stop"
+    },
     "primary-navigation": "Support"
   }
 }

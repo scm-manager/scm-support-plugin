@@ -36,6 +36,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 import com.google.inject.Inject;
 import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import sonia.scm.store.Blob;
 
@@ -44,6 +45,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.IOException;
@@ -96,15 +98,19 @@ public class SupportResource
 
   @GET
   @Path("logging")
+  @Produces(MediaType.APPLICATION_JSON)
   public Response loggingState()
   {
+    SupportPermissions.checkStartTrace();
+    Links.Builder links = Links.linkingTo()
+      .self(this.links.createTraceStatusLink());
+    if (supportManager.isTraceLoggingEnabled()) {
+      links.single(Link.link("stopTrace", this.links.createStopTraceLink()));
+    } else {
+      links.single(Link.link("startTrace", this.links.createStartTraceLink()));
+    }
     return Response.ok(
-      new HalRepresentation(
-        Links.linkingTo()
-//          .self()
-//          .single()
-          .build()))
-      .build();
+      new HalRepresentation(links.build())).build();
   }
 
   private Response createBlobResponse(Blob blob)

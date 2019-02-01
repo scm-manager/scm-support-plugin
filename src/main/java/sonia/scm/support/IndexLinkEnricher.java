@@ -25,5 +25,8 @@ public class IndexLinkEnricher implements LinkEnricher {
     if (SupportPermissions.isPermittedToReadInformation()) {
       appender.appendOne("supportInformation", links.createInformationLink());
     }
+    if (SupportPermissions.isPermittedToStartTrace()) {
+      appender.appendOne("tracing", links.createTraceStatusLink());
+    }
   }
 }

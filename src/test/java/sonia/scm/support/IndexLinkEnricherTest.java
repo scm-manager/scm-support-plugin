@@ -14,6 +14,7 @@ import sonia.scm.api.v2.resources.ScmPathInfoStore;
 import java.net.URI;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,7 +39,7 @@ class IndexLinkEnricherTest {
   }
 
   @Test
-  void shouldAppendLinksWhenPermitted() {
+  void shouldAppendInformationLinkWhenPermitted() {
     when(subject.isPermitted("support:information")).thenReturn(true);
 
     enricher.enrich(null, appender);
@@ -47,8 +48,27 @@ class IndexLinkEnricherTest {
   }
 
   @Test
-  void shouldNotAppendLinksWhenNotPermitted() {
+  void shouldNotAppendInformationLinkWhenNotPermitted() {
     when(subject.isPermitted("support:information")).thenReturn(false);
+
+    enricher.enrich(null, appender);
+
+    verify(appender, never()).appendOne(any(), any());
+  }
+
+  @Test
+  void shouldAppendTraceLinkWhenPermitted() {
+    when(subject.isPermitted(anyString())).thenReturn(false);
+    when(subject.isPermitted("support:trace")).thenReturn(true);
+
+    enricher.enrich(null, appender);
+
+    verify(appender).appendOne("tracing", "/v2/plugins/support/logging");
+  }
+
+  @Test
+  void shouldNotAppendLinksWhenNotPermitted() {
+    when(subject.isPermitted(anyString())).thenReturn(false);
 
     enricher.enrich(null, appender);
 

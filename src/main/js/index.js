@@ -16,7 +16,7 @@ const SupportRoute = ({ authenticated, links }: RouteProps) => {
     <>
       <ProtectedRoute
         path="/support"
-        component={() => <SupportPage informationLink={links.supportInformation.href} />}
+        component={() => <SupportPage informationLink={links.supportInformation.href} traceLink={links.tracing.href} />}
         authenticated={authenticated}
       />
     </>
