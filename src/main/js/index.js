@@ -2,9 +2,8 @@
 import React from "react";
 import { binder } from "@scm-manager/ui-extensions";
 import { ProtectedRoute } from "@scm-manager/ui-components";
-import { translate } from "react-i18next";
-import ScriptNavigation from "./ScriptNavigation";
-import RootPage from "./RootPage";
+import SupportNavigation from "./SupportNavigation";
+import SupportPage from "./SupportPage";
 import type { Links } from "@scm-manager/ui-types";
 
 type RouteProps = {
@@ -12,19 +11,19 @@ type RouteProps = {
   links: Links
 };
 
-const ScriptRoute = ({ authenticated, links }: RouteProps) => {
+const SupportRoute = ({ authenticated, links }: RouteProps) => {
   return (
     <>
       <ProtectedRoute
         path="/support"
-        component={() => <RootPage link={links.supportInformation.href} />}
+        component={() => <SupportPage link={links.supportInformation.href} />}
         authenticated={authenticated}
       />
     </>
   );
 };
 
-binder.bind("main.route", ScriptRoute);
+binder.bind("main.route", SupportRoute);
 
 type PredicateProps = {
   links: Links
@@ -32,7 +31,7 @@ type PredicateProps = {
 
 // @VisibleForTesting
 export const predicate = ({ links }: PredicateProps) => {
-  return !!(links && links.scripts);
+  return !!(links && links.supportInformation);
 };
 
-binder.bind("primary-navigation", ScriptNavigation, predicate);
+binder.bind("primary-navigation", SupportNavigation, predicate);
