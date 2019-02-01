@@ -9,12 +9,11 @@
     <version>2.0.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>sonia.scm.plugins</groupId>
   <artifactId>scm-support-plugin</artifactId>
   <packaging>smp</packaging>
   <version>2.0.0-SNAPSHOT</version>
   <name>${project.artifactId}</name>
-  <description>The plugin collect informations for support cases.</description>
+  <description>The plugin collect information for support cases.</description>
 
   <dependencies>
 

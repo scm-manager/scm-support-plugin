@@ -31,138 +31,82 @@
 
 package sonia.scm.support;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 import com.google.inject.Inject;
-
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.subject.Subject;
-
-import sonia.scm.security.Role;
+import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
 import sonia.scm.store.Blob;
-
-//~--- JDK imports ------------------------------------------------------------
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  *
  * @author Sebastian Sdorra
  */
-@Path("plugins/support")
+@Path("v2/plugins/support")
 public class SupportResource
 {
 
-  /** Field description */
   private static final String MEDIA_TYPE_ZIP = "application/zip";
 
-  //~--- constructors ---------------------------------------------------------
-
-  /**
-   * Constructs ...
-   *
-   *
-   * @param supportManager
-   */
   @Inject
-  public SupportResource(SupportManager supportManager)
+  public SupportResource(SupportManager supportManager, SupportLinks links)
   {
     this.supportManager = supportManager;
-
-    Subject subject = SecurityUtils.getSubject();
-
-    subject.checkRole(Role.ADMIN);
+    this.links = links;
   }
 
-  //~--- methods --------------------------------------------------------------
-
-  /**
-   * Method description
-   *
-   *
-   * @return
-   *
-   * @throws IOException
-   */
   @GET
+  @Path("")
   @Produces(MEDIA_TYPE_ZIP)
   public Response createSupportFile() throws IOException
   {
+    SupportPermissions.checkReadInformation();
     return createBlobResponse(supportManager.collectSupportData());
   }
 
-  /**
-   * Method description
-   *
-   *
-   * @return
-   *
-   * @throws IOException
-   */
   @GET
   @Path("logging/disable")
   @Produces(MEDIA_TYPE_ZIP)
   public Response disableTraceLogging() throws IOException
   {
+    SupportPermissions.checkStartTrace();
     return createBlobResponse(supportManager.disableTraceLogging());
   }
 
-  /**
-   * Method description
-   *
-   *
-   * @return
-   *
-   * @throws IOException
-   */
   @POST
   @Path("logging/enable")
   public Response enableTraceLogging() throws IOException
   {
+    SupportPermissions.checkStartTrace();
     supportManager.enableTraceLogging();
-
     return Response.noContent().build();
   }
 
-  /**
-   * Method description
-   *
-   *
-   * @return
-   */
   @GET
   @Path("logging")
-  @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-  public LoggingState loggingState()
+  public Response loggingState()
   {
-    return new LoggingState(supportManager.isTraceLoggingEnabled());
+    return Response.ok(
+      new HalRepresentation(
+        Links.linkingTo()
+//          .self()
+//          .single()
+          .build()))
+      .build();
   }
 
-  /**
-   * Method description
-   *
-   *
-   * @param blob
-   *
-   * @return
-   */
   private Response createBlobResponse(Blob blob)
   {
     //J-
@@ -170,7 +114,7 @@ public class SupportResource
       new BlobStreamingOutput(blob)
     )
     .header(
-      "Content-Disposition", 
+      "Content-Disposition",
       "attachment; filename=\"".concat(blob.getId()).concat(".zip\"")
     )
     .build();
@@ -179,22 +123,9 @@ public class SupportResource
 
   //~--- inner classes --------------------------------------------------------
 
-  /**
-   * Class description
-   *
-   *
-   * @version        Enter version here..., 14/02/16
-   * @author         Enter your name here...
-   */
   public static class BlobStreamingOutput implements StreamingOutput
   {
 
-    /**
-     * Constructs ...
-     *
-     *
-     * @param blob
-     */
     public BlobStreamingOutput(Blob blob)
     {
       this.blob = blob;
@@ -202,15 +133,6 @@ public class SupportResource
 
     //~--- methods ------------------------------------------------------------
 
-    /**
-     * Method description
-     *
-     *
-     * @param output
-     *
-     * @throws IOException
-     * @throws WebApplicationException
-     */
     @Override
     public void write(OutputStream output)
       throws IOException, WebApplicationException
@@ -228,64 +150,9 @@ public class SupportResource
       }
     }
 
-    //~--- fields -------------------------------------------------------------
-
-    /** Field description */
     private final Blob blob;
   }
 
-
-  /**
-   * Class description
-   *
-   *
-   * @version        Enter version here..., 14/02/18
-   * @author         Enter your name here...
-   */
-  @XmlRootElement
-  @XmlAccessorType(XmlAccessType.FIELD)
-  public static class LoggingState
-  {
-
-    /**
-     * Constructs ...
-     *
-     */
-    public LoggingState() {}
-
-    /**
-     * Constructs ...
-     *
-     *
-     * @param traceLoggingEnabled
-     */
-    public LoggingState(boolean traceLoggingEnabled)
-    {
-      this.traceLoggingEnabled = traceLoggingEnabled;
-    }
-
-    //~--- get methods --------------------------------------------------------
-
-    /**
-     * Method description
-     *
-     *
-     * @return
-     */
-    public boolean isTraceLoggingEnabled()
-    {
-      return traceLoggingEnabled;
-    }
-
-    //~--- fields -------------------------------------------------------------
-
-    /** Field description */
-    private boolean traceLoggingEnabled = false;
-  }
-
-
-  //~--- fields ---------------------------------------------------------------
-
-  /** Field description */
   private final SupportManager supportManager;
+  private final SupportLinks links;
 }
