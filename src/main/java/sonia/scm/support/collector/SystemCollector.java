@@ -126,7 +126,7 @@ public class SystemCollector extends WriterCollector
 
       RepositoryHandler handler = repositoryManager.getHandler(type.getName());
 
-      writer.println(handler.getVersionInformation());
+//      writer.println(handler.getVersionInformation()); TODO
     }
   }
 
