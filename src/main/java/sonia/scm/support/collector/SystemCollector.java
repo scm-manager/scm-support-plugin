@@ -37,6 +37,7 @@ import com.google.inject.Inject;
 
 import sonia.scm.SCMContext;
 import sonia.scm.SCMContextProvider;
+import sonia.scm.ServletContainerDetector;
 import sonia.scm.Type;
 import sonia.scm.plugin.Extension;
 import sonia.scm.repository.RepositoryHandler;
@@ -48,6 +49,8 @@ import sonia.scm.util.SystemUtil;
 
 //~--- JDK imports ------------------------------------------------------------
 
+import javax.inject.Provider;
+import javax.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
 
 import java.text.DecimalFormat;
@@ -64,11 +67,12 @@ public class SystemCollector extends WriterCollector
 {
 
   @Inject
-  public SystemCollector(RepositoryManager repositoryManager,
+  public SystemCollector(RepositoryManager repositoryManager, Provider<HttpServletRequest> requestProvider,
                          ConfigurationStoreFactory configurationStoreFactory, ConfigurationEntryStoreFactory configurationEntryStoreFactory, DataStoreFactory dataStoreFactory)
   {
     super("system.txt");
     this.repositoryManager = repositoryManager;
+    this.requestProvider = requestProvider;
     this.configurationStoreFactory = configurationStoreFactory;
     this.configurationEntryStoreFactory = configurationEntryStoreFactory;
     this.dataStoreFactory = dataStoreFactory;
@@ -100,7 +104,7 @@ public class SystemCollector extends WriterCollector
     writer.append("Architecture: ").println(SystemUtil.getArch());
     writer.append("Java: ").append(System.getProperty("java.vendor"));
     writer.append("/").println(System.getProperty("java.version"));
-//    writer.append("Container: ").println(SystemUtil.getServletContainer()); TODO
+    writer.append("Container: ").println(ServletContainerDetector.detect(requestProvider.get()));
     writer.append("Locale: ").println(Locale.getDefault());
     writer.append("TimeZone: ").println(TimeZone.getDefault().getID());
     writer.println();
@@ -156,6 +160,7 @@ public class SystemCollector extends WriterCollector
 
   private final RepositoryManager repositoryManager;
 
+  private final Provider<HttpServletRequest> requestProvider;
   private final ConfigurationStoreFactory configurationStoreFactory;
   private final ConfigurationEntryStoreFactory configurationEntryStoreFactory;
   private final DataStoreFactory dataStoreFactory;
