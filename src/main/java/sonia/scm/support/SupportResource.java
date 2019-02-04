@@ -109,12 +109,12 @@ public class SupportResource
   {
     SupportPermissions.checkStartTrace();
     Links.Builder links = Links.linkingTo()
-      .self(this.links.createTraceStatusLink());
+      .self(this.links.createLogStatusLink());
     if (!supportManager.isProcessingLog()) {
       if (supportManager.isTraceLoggingEnabled()) {
-        links.single(Link.link("stopTrace", this.links.createStopTraceLink()));
+        links.single(Link.link("stopLog", this.links.createStopLogLink()));
       } else {
-        links.single(Link.link("startTrace", this.links.createStartTraceLink()));
+        links.single(Link.link("startLog", this.links.createStartLogLink()));
       }
     }
     return Response.ok(

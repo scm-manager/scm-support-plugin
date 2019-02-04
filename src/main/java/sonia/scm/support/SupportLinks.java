@@ -20,17 +20,17 @@ class SupportLinks {
     return linkBuilder.method("createSupportFile").parameters().href();
   }
 
-  String createTraceStatusLink() {
+  String createLogStatusLink() {
     LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), SupportResource.class);
     return linkBuilder.method("loggingState").parameters().href();
   }
 
-  String createStartTraceLink() {
+  String createStartLogLink() {
     LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), SupportResource.class);
     return linkBuilder.method("enableTraceLogging").parameters().href();
   }
 
-  String createStopTraceLink() {
+  String createStopLogLink() {
     LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), SupportResource.class);
     return linkBuilder.method("disableTraceLogging").parameters().href();
   }

@@ -2,5 +2,5 @@
 
 export type SupportLinks = {
   supportInformation: string,
-  tracing?: string
+  logging?: string
 };

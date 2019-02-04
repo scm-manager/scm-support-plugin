@@ -5,16 +5,16 @@ import {apiClient, Button, DownloadButton, Loading, Page} from "@scm-manager/ui-
 
 type Props = {
   informationLink?: string,
-  traceLink?: string,
+  logLink?: string,
   // context props
   t: string => string
 };
 
 type State = {
-  startTraceLink?: string,
-  stopTraceLink?: string,
-  startTraceSuccess: boolean,
-  startTraceFailed: boolean,
+  startLogLink?: string,
+  stopLogLink?: string,
+  startLogSuccess: boolean,
+  startLogFailed: boolean,
   processingLog: boolean
 }
 
@@ -23,46 +23,46 @@ class SupportPage extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      startTraceLink: undefined,
-      stopTraceLink: undefined,
-      startTraceSuccess: false,
-      startTraceFailed: false,
+      startLogLink: undefined,
+      stopLogLink: undefined,
+      startLogSuccess: false,
+      startLogFailed: false,
       processingLog: false
     }
   }
 
   componentDidMount(): void {
-    if (!!this.props.traceLink) {
-      this.fetchTraceStatus();
+    if (!!this.props.logLink) {
+      this.fetchLogStatus();
     }
   }
 
-  fetchTraceStatus = () => {
-    apiClient.get(this.props.traceLink)
+  fetchLogStatus = () => {
+    apiClient.get(this.props.logLink)
       .then(result => result.json())
-      .then(traceLinks => {
+      .then(logLinks => {
         this.setState({
-          startTraceLink: traceLinks._links.startTrace,
-          stopTraceLink: traceLinks._links.stopTrace,
-          processingLog: traceLinks.processingLog
+          startLogLink: logLinks._links.startLog,
+          stopLogLink: logLinks._links.stopLog,
+          processingLog: logLinks.processingLog
         }, () => {
           if (this.state.processingLog) {
             console.log("trigger next check");
-            this.updateTraceStatusAfterWait();
+            this.updateLogStatusAfterWait();
           }
         });
       });
   };
 
-  updateTraceStatusAfterWait = async () => {
+  updateLogStatusAfterWait = async () => {
     setTimeout(function () {
-      this.fetchTraceStatus();
+      this.fetchLogStatus();
     }.bind(this), 1000)
   };
 
   render() {
     const {t, informationLink} = this.props;
-    const {startTraceLink, stopTraceLink, processingLog} = this.state;
+    const {startLogLink, stopLogLink, processingLog} = this.state;
 
     const message = this.createMessage();
 
@@ -76,10 +76,10 @@ class SupportPage extends React.Component<Props, State> {
         <DownloadButton displayName={t("scm-support-plugin.collect.button")} url={informationLink}/>
       </>) : null;
 
-    const canStartTrace = !!startTraceLink;
-    const canStopTrace = !!stopTraceLink;
+    const canStartLog = !!startLogLink;
+    const canStopLog = !!stopLogLink;
 
-    const tracePart =
+    const logPart =
       processingLog ?
         (<Loading message={t("scm-support-plugin.log.loading")}/>) :
         (<>
@@ -91,11 +91,11 @@ class SupportPage extends React.Component<Props, State> {
               <em>{t("scm-support-plugin.log.warning")}</em>
             </p>
             <br/>
-            <Button color="warning" label={t("scm-support-plugin.log.startButton")} disabled={!canStartTrace}
-                    action={this.startTrace}/>
+            <Button color="warning" label={t("scm-support-plugin.log.startButton")} disabled={!canStartLog}
+                    action={this.startLog}/>
             <DownloadButton displayName={t("scm-support-plugin.log.stopButton")}
-                            url={!stopTraceLink ? "" : stopTraceLink.href}
-                            disabled={!canStopTrace} onClick={this.stopTrace}/>
+                            url={!stopLogLink ? "" : stopLogLink.href}
+                            disabled={!canStopLog} onClick={this.stopLog}/>
             <br/>
           </>);
 
@@ -106,29 +106,29 @@ class SupportPage extends React.Component<Props, State> {
       >
         {message}
         {informationPart}
-        {tracePart}
+        {logPart}
       </Page>
     );
   }
 
   createMessage = () => {
-    const {startTraceSuccess, startTraceFailed} = this.state;
-    if (startTraceSuccess) {
+    const {startLogSuccess, startLogFailed} = this.state;
+    if (startLogSuccess) {
       return (this.createNotification("scm-support-plugin.log.startSuccess"));
-    } else if (startTraceFailed) {
+    } else if (startLogFailed) {
       return (this.createNotification("scm-support-plugin.log.startFailed"));
     }
     return null;
   };
 
   createNotification = (messageKey: string) => {
-    if (this.state.startTraceFailed || this.state.startTraceSuccess) {
+    if (this.state.startLogFailed || this.state.startLogSuccess) {
       return (
         <div className="notification is-info">
           <button
             className="delete"
             onClick={() =>
-              this.setState({startTraceFailed: false, startTraceSuccess: false})
+              this.setState({startLogFailed: false, startLogSuccess: false})
             }
           />
           {this.props.t(messageKey)}
@@ -137,33 +137,33 @@ class SupportPage extends React.Component<Props, State> {
     }
   };
 
-  startTrace = (e: Event) => {
-    const {startTraceLink} = this.state;
+  startLog = (e: Event) => {
+    const {startLogLink} = this.state;
     apiClient
-      .post(startTraceLink.href, "")
+      .post(startLogLink.href, "")
       .then(result => {
-        const startTraceSuccess = result.status === 204;
-        const startTraceFailed = result.status !== 204;
+        const startLogSuccess = result.status === 204;
+        const startLogFailed = result.status !== 204;
         this.setState({
-          startTraceFailed, startTraceSuccess
-        }, this.fetchTraceStatus);
+          startLogFailed, startLogSuccess
+        }, this.fetchLogStatus);
       })
       .catch(err => {
         this.setState({
-          startTraceFailed: true,
-          startTraceSuccess: false
-        }, this.fetchTraceStatus);
+          startLogFailed: true,
+          startLogSuccess: false
+        }, this.fetchLogStatus);
       });
   };
 
-  stopTrace = () => {
+  stopLog = () => {
     this.setState({
-      startTraceFailed: false,
-      startTraceSuccess: false,
-      stopTraceLink: undefined,
+      startLogFailed: false,
+      startLogSuccess: false,
+      stopLogLink: undefined,
       processingLog: true
     }, () => {
-      this.updateTraceStatusAfterWait();
+      this.updateLogStatusAfterWait();
     });
     return true;
   };
