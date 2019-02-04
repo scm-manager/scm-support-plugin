@@ -59,11 +59,11 @@ class IndexLinkEnricherTest {
   @Test
   void shouldAppendTraceLinkWhenPermitted() {
     when(subject.isPermitted(anyString())).thenReturn(false);
-    when(subject.isPermitted("support:trace")).thenReturn(true);
+    when(subject.isPermitted("support:log")).thenReturn(true);
 
     enricher.enrich(null, appender);
 
-    verify(appender).appendOne("tracing", "/v2/plugins/support/logging");
+    verify(appender).appendOne("logging", "/v2/plugins/support/logging");
   }
 
   @Test
