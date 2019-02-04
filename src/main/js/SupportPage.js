@@ -47,7 +47,6 @@ class SupportPage extends React.Component<Props, State> {
           processingLog: logLinks.processingLog
         }, () => {
           if (this.state.processingLog) {
-            console.log("trigger next check");
             this.updateLogStatusAfterWait();
           }
         });
