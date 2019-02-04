@@ -31,7 +31,7 @@ type PredicateProps = {
 
 // @VisibleForTesting
 export const predicate = ({ links }: PredicateProps) => {
-  return !!(links && links.supportInformation);
+  return !!(links && (links.supportInformation || links.logging));
 };
 
 binder.bind("primary-navigation", SupportNavigation, predicate);
