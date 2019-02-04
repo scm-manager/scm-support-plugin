@@ -82,21 +82,21 @@ class SupportPage extends React.Component<Props, State> {
       processingLog ?
         (<Loading message={t("scm-support-plugin.log.loading")}/>) :
         (<>
-            <hr/>
-            <p>
-              {t("scm-support-plugin.log.help")}
-            </p>
-            <p>
-              <em>{t("scm-support-plugin.log.warning")}</em>
-            </p>
-            <br/>
-            <Button color="warning" label={t("scm-support-plugin.log.startButton")} disabled={!canStartLog}
-                    action={this.startLog}/>
-            <DownloadButton displayName={t("scm-support-plugin.log.stopButton")}
-                            url={!stopLogLink ? "" : stopLogLink.href}
-                            disabled={!canStopLog} onClick={this.stopLog}/>
-            <br/>
-          </>);
+          <hr/>
+          <p>
+            {t("scm-support-plugin.log.help")}
+          </p>
+          <p>
+            <em>{t("scm-support-plugin.log.warning")}</em>
+          </p>
+          <br/>
+          <a color="warning" className="button is-large is-link is-warning" disabled={!canStartLog}
+             onClick={this.startLog}><span>{t("scm-support-plugin.log.startButton")}</span></a>
+          <DownloadButton displayName={t("scm-support-plugin.log.stopButton")}
+                          url={!stopLogLink ? "" : stopLogLink.href}
+                          disabled={!canStopLog} onClick={this.stopLog}/>
+          <br/>
+        </>);
 
     return (
       <Page
