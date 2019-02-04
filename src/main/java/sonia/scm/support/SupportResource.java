@@ -86,9 +86,8 @@ public class SupportResource
   @Produces(MEDIA_TYPE_ZIP)
   public Response disableTraceLogging() throws IOException
   {
+    SupportPermissions.checkStartLog();
     log.info("disable trace log");
-
-    SupportPermissions.checkStartTrace();
     return createBlobResponse(supportManager.disableTraceLogging());
   }
 
@@ -96,8 +95,8 @@ public class SupportResource
   @Path("logging/enable")
   public Response enableTraceLogging() throws IOException
   {
+    SupportPermissions.checkStartLog();
     log.info("enable trace log");
-    SupportPermissions.checkStartTrace();
     supportManager.enableTraceLogging();
     return Response.noContent().build();
   }
@@ -107,7 +106,7 @@ public class SupportResource
   @Produces(MediaType.APPLICATION_JSON)
   public Response loggingState()
   {
-    SupportPermissions.checkStartTrace();
+    SupportPermissions.checkStartLog();
     Links.Builder links = Links.linkingTo()
       .self(this.links.createLogStatusLink());
     if (!supportManager.isProcessingLog()) {

@@ -8,7 +8,7 @@ class SupportPermissions {
   private static final String TYPE = "support";
 
   private static final String ACTION_INFORMATION = "information";
-  private static final String ACTION_TRACE = "trace";
+  private static final String ACTION_LOG = "log";
 
   private SupportPermissions() {
   }
@@ -18,7 +18,7 @@ class SupportPermissions {
   }
 
   static boolean isPermittedToStartTrace() {
-    return isPermitted(ACTION_TRACE);
+    return isPermitted(ACTION_LOG);
   }
 
   private static boolean isPermitted(String action) {
@@ -30,8 +30,8 @@ class SupportPermissions {
     check(ACTION_INFORMATION);
   }
 
-  static void checkStartTrace() {
-    check(ACTION_TRACE);
+  static void checkStartLog() {
+    check(ACTION_LOG);
   }
 
   private static void check(String action) {
