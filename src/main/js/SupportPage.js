@@ -123,7 +123,7 @@ class SupportPage extends React.Component<Props, State> {
   createNotification = (messageKey: string) => {
     if (this.state.startLogFailed || this.state.startLogSuccess) {
       return (
-        <div className="notification is-info">
+        <div className={this.state.startLogFailed? "notification is-warning": "notification is-info"}>
           <button
             className="delete"
             onClick={() =>
