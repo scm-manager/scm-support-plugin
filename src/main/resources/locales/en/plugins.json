@@ -20,5 +20,17 @@
       "loading": "Processing logs..."
     },
     "primary-navigation": "Support"
+  },
+  "permissions": {
+    "support": {
+      "information": {
+        "displayName": "Gather support information",
+        "description": "May gather support information like system information, installed plugins and stack traces"
+      },
+      "logging": {
+        "displayName": "Start and stop trace logging",
+        "description": "May start and stop trace level system logging and read these logs"
+      }
+    }
   }
 }

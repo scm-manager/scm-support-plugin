@@ -8,7 +8,7 @@ class SupportPermissions {
   private static final String TYPE = "support";
 
   private static final String ACTION_INFORMATION = "information";
-  private static final String ACTION_LOG = "log";
+  private static final String ACTION_LOG = "logging";
 
   private SupportPermissions() {
   }
