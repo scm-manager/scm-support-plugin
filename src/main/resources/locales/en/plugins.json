@@ -6,14 +6,14 @@
       "help": "Will give you everything you need to know and even more.",
       "button": "Collect"
     },
-    "trace": {
-      "help": "Switch logging to trace level and gather a lot of logs for a limited time. To do this, enable the trace. You will get the logs when you switch it off again.",
+    "log": {
+      "help": "Switch logging to trace level and gather a lot of logs for a limited time. To do this, enable the log. You will get the results when you switch it off again.",
       "warning": "Please keep in mind, that this may slow down this instance!",
       "startButton": "Start",
       "stopButton": "Stop",
-      "startSuccess": "Trace successfully started",
-      "startFailed": "Trace could not be started",
-      "loading": "Loading trace..."
+      "startSuccess": "Log successfully started",
+      "startFailed": "Log could not be started",
+      "loading": "Processing logs..."
     },
     "primary-navigation": "Support"
   }

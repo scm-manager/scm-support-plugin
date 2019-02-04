@@ -15,7 +15,7 @@ type State = {
   stopTraceLink?: string,
   startTraceSuccess: boolean,
   startTraceFailed: boolean,
-  traceLoading: boolean
+  processingLog: boolean
 }
 
 class SupportPage extends React.Component<Props, State> {
@@ -27,7 +27,7 @@ class SupportPage extends React.Component<Props, State> {
       stopTraceLink: undefined,
       startTraceSuccess: false,
       startTraceFailed: false,
-      traceLoading: false
+      processingLog: false
     }
   }
 
@@ -43,15 +43,26 @@ class SupportPage extends React.Component<Props, State> {
       .then(traceLinks => {
         this.setState({
           startTraceLink: traceLinks._links.startTrace,
-          stopTraceLink: traceLinks._links.stopTrace
+          stopTraceLink: traceLinks._links.stopTrace,
+          processingLog: traceLinks.processingLog
+        }, () => {
+          if (this.state.processingLog) {
+            console.log("trigger next check");
+            this.updateTraceStatusAfterWait();
+          }
         });
       });
   };
 
+  updateTraceStatusAfterWait = async () => {
+    setTimeout(function () {
+      this.fetchTraceStatus();
+    }.bind(this), 1000)
+  };
 
   render() {
     const {t, informationLink} = this.props;
-    const {startTraceLink, stopTraceLink, traceLoading} = this.state;
+    const {startTraceLink, stopTraceLink, processingLog} = this.state;
 
     const message = this.createMessage();
 
@@ -68,21 +79,25 @@ class SupportPage extends React.Component<Props, State> {
     const canStartTrace = !!startTraceLink;
     const canStopTrace = !!stopTraceLink;
 
-    const tracePart = !!(startTraceLink || stopTraceLink) ? (
-      <>
-        <hr/>
-        <p>
-          {t("scm-support-plugin.trace.help")}
-        </p>
-        <p>
-          <em>{t("scm-support-plugin.trace.warning")}</em>
-        </p>
-        <br/>
-        <Button color="warning" label={t("scm-support-plugin.trace.startButton")} disabled={!canStartTrace} action={this.startTrace}/>
-        <DownloadButton displayName={t("scm-support-plugin.trace.stopButton")} url={!stopTraceLink? "": stopTraceLink.href}
-                        disabled={!canStopTrace} onClick={this.stopTrace}/>
-        <br/>
-      </>) : traceLoading? (<Loading message={t("scm-support-plugin.trace.loading")}/>): null;
+    const tracePart =
+      processingLog ?
+        (<Loading message={t("scm-support-plugin.log.loading")}/>) :
+        (<>
+            <hr/>
+            <p>
+              {t("scm-support-plugin.log.help")}
+            </p>
+            <p>
+              <em>{t("scm-support-plugin.log.warning")}</em>
+            </p>
+            <br/>
+            <Button color="warning" label={t("scm-support-plugin.log.startButton")} disabled={!canStartTrace}
+                    action={this.startTrace}/>
+            <DownloadButton displayName={t("scm-support-plugin.log.stopButton")}
+                            url={!stopTraceLink ? "" : stopTraceLink.href}
+                            disabled={!canStopTrace} onClick={this.stopTrace}/>
+            <br/>
+          </>);
 
     return (
       <Page
@@ -99,9 +114,9 @@ class SupportPage extends React.Component<Props, State> {
   createMessage = () => {
     const {startTraceSuccess, startTraceFailed} = this.state;
     if (startTraceSuccess) {
-      return (this.createNotification("scm-support-plugin.trace.startSuccess"));
+      return (this.createNotification("scm-support-plugin.log.startSuccess"));
     } else if (startTraceFailed) {
-      return (this.createNotification("scm-support-plugin.trace.startFailed"));
+      return (this.createNotification("scm-support-plugin.log.startFailed"));
     }
     return null;
   };
@@ -146,18 +161,12 @@ class SupportPage extends React.Component<Props, State> {
       startTraceFailed: false,
       startTraceSuccess: false,
       stopTraceLink: undefined,
-      traceLoading: true
+      processingLog: true
     }, () => {
-      this.x();
+      this.updateTraceStatusAfterWait();
     });
     return true;
   };
-
-  x = async () => {
-    setTimeout(function() {
-      this.fetchTraceStatus();
-    }.bind(this), 10000)
-  }
 }
 
 export default translate("plugins")(SupportPage);

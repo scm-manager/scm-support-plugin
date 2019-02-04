@@ -35,9 +35,10 @@ package sonia.scm.support;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 import com.google.inject.Inject;
-import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sonia.scm.store.Blob;
 
 import javax.ws.rs.GET;
@@ -59,6 +60,8 @@ import java.io.OutputStream;
 @Path("v2/plugins/support")
 public class SupportResource
 {
+
+  private static final Logger log = LoggerFactory.getLogger(SupportResource.class);
 
   private static final String MEDIA_TYPE_ZIP = "application/zip";
 
@@ -83,6 +86,8 @@ public class SupportResource
   @Produces(MEDIA_TYPE_ZIP)
   public Response disableTraceLogging() throws IOException
   {
+    log.info("disable trace log");
+
     SupportPermissions.checkStartTrace();
     return createBlobResponse(supportManager.disableTraceLogging());
   }
@@ -91,6 +96,7 @@ public class SupportResource
   @Path("logging/enable")
   public Response enableTraceLogging() throws IOException
   {
+    log.info("enable trace log");
     SupportPermissions.checkStartTrace();
     supportManager.enableTraceLogging();
     return Response.noContent().build();
@@ -104,13 +110,16 @@ public class SupportResource
     SupportPermissions.checkStartTrace();
     Links.Builder links = Links.linkingTo()
       .self(this.links.createTraceStatusLink());
-    if (supportManager.isTraceLoggingEnabled()) {
-      links.single(Link.link("stopTrace", this.links.createStopTraceLink()));
-    } else {
-      links.single(Link.link("startTrace", this.links.createStartTraceLink()));
+    if (!supportManager.isProcessingLog()) {
+      if (supportManager.isTraceLoggingEnabled()) {
+        links.single(Link.link("stopTrace", this.links.createStopTraceLink()));
+      } else {
+        links.single(Link.link("startTrace", this.links.createStartTraceLink()));
+      }
     }
     return Response.ok(
-      new HalRepresentation(links.build())).build();
+      new LoggingStateDto(supportManager.isTraceLoggingEnabled(), supportManager.isProcessingLog(), links.build()))
+      .build();
   }
 
   private Response createBlobResponse(Blob blob)
