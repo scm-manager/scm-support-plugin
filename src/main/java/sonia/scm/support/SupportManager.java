@@ -115,7 +115,7 @@ public final class SupportManager
   {
     if (loggingHandler == null)
     {
-      throw new IllegalStateException();
+      throw new IllegalStateException("logging handler not set, could not stop");
     }
 
     try {
@@ -156,7 +156,7 @@ public final class SupportManager
   {
     if (loggingHandler != null)
     {
-      throw new IllegalStateException();
+      throw new IllegalStateException("logging handler already set, could not start again");
     }
 
     loggingHandler = new LoggingHandler(new SupportHandler(blobStore));

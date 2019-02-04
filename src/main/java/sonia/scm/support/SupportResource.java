@@ -75,20 +75,28 @@ public class SupportResource
   @GET
   @Path("")
   @Produces(MEDIA_TYPE_ZIP)
-  public Response createSupportFile() throws IOException
+  public Response createSupportFile()
   {
     SupportPermissions.checkReadInformation();
-    return createBlobResponse(supportManager.collectSupportData());
+    try {
+      return createBlobResponse(supportManager.collectSupportData());
+    } catch (Exception e) {
+      return Response.ok("Could not create information package.\n" + e, MediaType.TEXT_PLAIN_TYPE).build();
+    }
   }
 
   @GET
   @Path("logging/disable")
   @Produces(MEDIA_TYPE_ZIP)
-  public Response disableTraceLogging() throws IOException
+  public Response disableTraceLogging()
   {
     SupportPermissions.checkStartLog();
     log.info("disable trace log");
-    return createBlobResponse(supportManager.disableTraceLogging());
+    try {
+      return createBlobResponse(supportManager.disableTraceLogging());
+    } catch (Exception e) {
+      return Response.ok("Could not create trace log package.\n" + e, MediaType.TEXT_PLAIN_TYPE).build();
+    }
   }
 
   @POST
