@@ -65,15 +65,30 @@ class SupportPage extends React.Component<Props, State> {
 
     const message = this.createMessage();
 
+    const infoItemCount = t("scm-support-plugin.collect.helpItemCount");
+
+    const infoItems = Array(parseInt(infoItemCount));
+    for(let i = 0; i < infoItemCount; i++) {
+      const textKey = "scm-support-plugin.collect.helpItem" + (i + 1);
+      const text = t(textKey);
+      if (text === textKey) {
+        break;
+      }
+      infoItems.push((<li>{text}</li>));
+    }
+
     const informationPart = !!informationLink ? (
-      <>
+      <div className="content">
         <hr/>
         <p>
           {t("scm-support-plugin.collect.help")}
         </p>
+          <ul>
+          {infoItems}
+          </ul>
         <br/>
         <DownloadButton displayName={t("scm-support-plugin.collect.button")} url={informationLink}/>
-      </>) : null;
+      </div>) : null;
 
     const canStartLog = !!startLogLink;
     const canStopLog = !!stopLogLink;
@@ -81,7 +96,7 @@ class SupportPage extends React.Component<Props, State> {
     const logPart =
       processingLog ?
         (<Loading message={t("scm-support-plugin.log.loading")}/>) :
-        (<>
+        (<div className="content">
           <hr/>
           <p>
             {t("scm-support-plugin.log.help")}
@@ -96,7 +111,7 @@ class SupportPage extends React.Component<Props, State> {
                           url={!stopLogLink ? "" : stopLogLink.href}
                           disabled={!canStopLog} onClick={this.stopLog}/>
           <br/>
-        </>);
+        </div>);
 
     return (
       <Page
