@@ -65,16 +65,16 @@ class SupportPage extends React.Component<Props, State> {
 
     const message = this.createMessage();
 
-    const infoItemCount = t("scm-support-plugin.collect.helpItemCount");
-
-    const infoItems = Array(parseInt(infoItemCount));
-    for(let i = 0; i < infoItemCount; i++) {
-      const textKey = "scm-support-plugin.collect.helpItem" + (i + 1);
+    const infoItems = [];
+    let index = 0;
+    while (true) {
+      const textKey = "scm-support-plugin.collect.helpItem" + (index + 1);
       const text = t(textKey);
       if (text === textKey) {
         break;
       }
       infoItems.push((<li>{text}</li>));
+      ++index;
     }
 
     const informationPart = !!informationLink ? (
