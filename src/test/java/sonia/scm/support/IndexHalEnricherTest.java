@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import sonia.scm.api.v2.resources.LinkAppender;
+import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.ScmPathInfoStore;
 
 import java.net.URI;
@@ -20,21 +20,21 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class IndexLinkEnricherTest {
+class IndexHalEnricherTest {
 
   @Mock
-  private LinkAppender appender;
+  private HalAppender appender;
   @Mock
   private Subject subject;
 
-  private IndexLinkEnricher enricher;
+  private IndexHalEnricher enricher;
 
   @BeforeEach
   void setUp() {
     ScmPathInfoStore pathInfoStore = new ScmPathInfoStore();
     pathInfoStore.set(() -> URI.create("/"));
     SupportLinks links = new SupportLinks(Providers.of(pathInfoStore));
-    enricher = new IndexLinkEnricher(links);
+    enricher = new IndexHalEnricher(links);
     ThreadContext.bind(subject);
   }
 
@@ -44,7 +44,7 @@ class IndexLinkEnricherTest {
 
     enricher.enrich(null, appender);
 
-    verify(appender).appendOne("supportInformation", "/v2/plugins/support");
+    verify(appender).appendLink("supportInformation", "/v2/plugins/support");
   }
 
   @Test
@@ -53,7 +53,7 @@ class IndexLinkEnricherTest {
 
     enricher.enrich(null, appender);
 
-    verify(appender, never()).appendOne(any(), any());
+    verify(appender, never()).appendLink(any(), any());
   }
 
   @Test
@@ -63,7 +63,7 @@ class IndexLinkEnricherTest {
 
     enricher.enrich(null, appender);
 
-    verify(appender).appendOne("logging", "/v2/plugins/support/logging");
+    verify(appender).appendLink("logging", "/v2/plugins/support/logging");
   }
 
   @Test
@@ -72,6 +72,6 @@ class IndexLinkEnricherTest {
 
     enricher.enrich(null, appender);
 
-    verify(appender, never()).appendOne(any(), any());
+    verify(appender, never()).appendLink(any(), any());
   }
 }
