@@ -1,7 +1,7 @@
 //@flow
 import React from "react";
 import {translate} from "react-i18next";
-import {apiClient, Button, DownloadButton, Loading, Page} from "@scm-manager/ui-components";
+import {apiClient, Button, DownloadButton, Loading, Notification, Page} from "@scm-manager/ui-components";
 
 type Props = {
   informationLink?: string,
@@ -65,18 +65,6 @@ class SupportPage extends React.Component<Props, State> {
 
     const message = this.createMessage();
 
-    const infoItems = [];
-    let index = 0;
-    while (true) {
-      const textKey = "scm-support-plugin.collect.helpItem" + (index + 1);
-      const text = t(textKey);
-      if (text === textKey) {
-        break;
-      }
-      infoItems.push((<li>{text}</li>));
-      ++index;
-    }
-
     const informationPart = !!informationLink ? (
       <div className="content">
         <hr/>
@@ -84,7 +72,10 @@ class SupportPage extends React.Component<Props, State> {
           {t("scm-support-plugin.collect.help")}
         </p>
           <ul>
-          {infoItems}
+            <li>{t("scm-support-plugin.collect.helpItem.sysInfo")}</li>
+            <li>{t("scm-support-plugin.collect.helpItem.support")}</li>
+            <li>{t("scm-support-plugin.collect.helpItem.plugins")}</li>
+            <li>{t("scm-support-plugin.collect.helpItem.stackTrace")}</li>
           </ul>
         <br/>
         <DownloadButton displayName={t("scm-support-plugin.collect.button")} url={informationLink}/>
@@ -126,29 +117,22 @@ class SupportPage extends React.Component<Props, State> {
   }
 
   createMessage = () => {
+    const {t} = this.props;
     const {startLogSuccess, startLogFailed} = this.state;
+
+    const onClose = () => {
+      this.setState({
+        startLogSuccess: false,
+        startLogFailed: false
+      });
+    };
+
     if (startLogSuccess) {
-      return (this.createNotification("scm-support-plugin.log.startSuccess"));
+      return (<Notification type={"success"} onClose={onClose}>{t("scm-support-plugin.log.startSuccess")}</Notification>);
     } else if (startLogFailed) {
-      return (this.createNotification("scm-support-plugin.log.startFailed"));
+      return (<Notification type={"success"} onClose={onClose}>{t("scm-support-plugin.log.startFailed")}</Notification>);
     }
     return null;
-  };
-
-  createNotification = (messageKey: string) => {
-    if (this.state.startLogFailed || this.state.startLogSuccess) {
-      return (
-        <div className={this.state.startLogFailed? "notification is-warning": "notification is-info"}>
-          <button
-            className="delete"
-            onClick={() =>
-              this.setState({startLogFailed: false, startLogSuccess: false})
-            }
-          />
-          {this.props.t(messageKey)}
-        </div>
-      );
-    }
   };
 
   startLog = (e: Event) => {

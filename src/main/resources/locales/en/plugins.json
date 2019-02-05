@@ -4,10 +4,12 @@
     "subtitle": "Gather support information for this SCM-Manager instance",
     "collect": {
       "help": "Will give you the following information about this SCM Manager instance:",
-      "helpItem1": "general system information",
-      "helpItem2": "support relevant information",
-      "helpItem3": "installed plugins",
-      "helpItem4": "stack traces",
+      "helpItem": {
+        "sysInfo": "general system information",
+        "support": "support relevant information",
+        "plugins": "installed plugins",
+        "stackTrace": "stack traces"
+      },
       "button": "Collect"
     },
     "log": {

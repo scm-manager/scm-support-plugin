@@ -4,10 +4,12 @@
     "subtitle": "Support Informationen für diese SCM-Manager Instanz",
     "collect": {
       "help": "Beinhaltet die folgenden Informationen zu dieser Instanz des SCM-Manager:",
-      "helpItem1": "Generelle System Informationen",
-      "helpItem2": "Support relevante Informationen",
-      "helpItem3": "Installierte Plugins",
-      "helpItem4": "Stack Traces",
+      "helpItem": {
+        "sysInfo": "Generelle System Informationen",
+        "support": "Support relevante Informationen",
+        "plugins": "Installierte Plugins",
+        "stackTrace": "Stack Traces"
+      },
       "button": "Laden"
     },
     "log": {
