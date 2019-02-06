@@ -71,12 +71,12 @@ class SupportPage extends React.Component<Props, State> {
         <p>
           {t("scm-support-plugin.collect.help")}
         </p>
-          <ul>
-            <li>{t("scm-support-plugin.collect.helpItem.sysInfo")}</li>
-            <li>{t("scm-support-plugin.collect.helpItem.support")}</li>
-            <li>{t("scm-support-plugin.collect.helpItem.plugins")}</li>
-            <li>{t("scm-support-plugin.collect.helpItem.stackTrace")}</li>
-          </ul>
+        <ul>
+          <li>{t("scm-support-plugin.collect.helpItem.sysInfo")}</li>
+          <li>{t("scm-support-plugin.collect.helpItem.support")}</li>
+          <li>{t("scm-support-plugin.collect.helpItem.plugins")}</li>
+          <li>{t("scm-support-plugin.collect.helpItem.stackTrace")}</li>
+        </ul>
         <br/>
         <DownloadButton displayName={t("scm-support-plugin.collect.button")} url={informationLink}/>
       </div>) : null;
@@ -93,7 +93,8 @@ class SupportPage extends React.Component<Props, State> {
             {t("scm-support-plugin.log.help")}
           </p>
           <p>
-            <em>{t("scm-support-plugin.log.warning")}</em>
+            <span className="icon has-text-warning"><i className="fas fa-exclamation-triangle"/></span>
+            <em className="it-warning">{t("scm-support-plugin.log.warning")}</em>
           </p>
           <br/>
           <a color="warning" className="button is-large is-link is-warning" disabled={!canStartLog}
@@ -128,9 +129,11 @@ class SupportPage extends React.Component<Props, State> {
     };
 
     if (startLogSuccess) {
-      return (<Notification type={"success"} onClose={onClose}>{t("scm-support-plugin.log.startSuccess")}</Notification>);
+      return (
+        <Notification type={"success"} onClose={onClose}>{t("scm-support-plugin.log.startSuccess")}</Notification>);
     } else if (startLogFailed) {
-      return (<Notification type={"success"} onClose={onClose}>{t("scm-support-plugin.log.startFailed")}</Notification>);
+      return (
+        <Notification type={"success"} onClose={onClose}>{t("scm-support-plugin.log.startFailed")}</Notification>);
     }
     return null;
   };
