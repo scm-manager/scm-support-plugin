@@ -65,7 +65,6 @@ public final class SupportManager
   /**
    * Constructs ...
    *
-   *
    * @param blobStoreFactory
    * @param collectors
    */
@@ -116,9 +115,18 @@ public final class SupportManager
   {
     if (loggingHandler == null)
     {
-      throw new IllegalStateException();
+      throw new IllegalStateException("logging handler not set, could not stop");
     }
 
+    try {
+      processingLog = true;
+      return createBlob();
+    } finally {
+      processingLog = false;
+    }
+  }
+
+  private Blob createBlob() throws IOException {
     SupportHandler supportHandler = loggingHandler.getSupportHandler();
 
     try
@@ -148,7 +156,7 @@ public final class SupportManager
   {
     if (loggingHandler != null)
     {
-      throw new IllegalStateException();
+      throw new IllegalStateException("logging handler already set, could not start again");
     }
 
     loggingHandler = new LoggingHandler(new SupportHandler(blobStore));
@@ -165,7 +173,11 @@ public final class SupportManager
    */
   public boolean isTraceLoggingEnabled()
   {
-    return loggingHandler != null;
+    return !isProcessingLog() && loggingHandler != null;
+  }
+
+  public boolean isProcessingLog() {
+    return processingLog;
   }
 
   //~--- methods --------------------------------------------------------------
@@ -192,12 +204,9 @@ public final class SupportManager
 
   //~--- fields ---------------------------------------------------------------
 
-  /** Field description */
   private final BlobStore blobStore;
-
-  /** Field description */
   private final Set<Collector> collectors;
 
-  /** Field description */
+  private boolean processingLog = false;
   private LoggingHandler loggingHandler;
 }

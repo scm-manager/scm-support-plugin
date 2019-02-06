@@ -1,0 +1,24 @@
+{
+  "name": "@scm-manager/support-plugin",
+  "license": "BSD-3-Clause",
+  "main": "src/main/js/index.js",
+  "scripts": {
+    "build": "ui-bundler plugin",
+    "watch": "ui-bundler plugin -w",
+    "test": "ui-bundler test --ci",
+    "lint": "ui-bundler lint",
+    "flow": "flow check"
+  },
+  "dependencies": {
+    "@scm-manager/ui-components": "latest",
+    "@scm-manager/ui-extensions": "^0.1.1",
+    "@scm-manager/ui-types": "latest",
+    "react-ace": "^6.3.2",
+    "react": "latest"
+  },
+  "devDependencies": {
+    "@scm-manager/ui-bundler": "^0.0.24",
+    "jest": "^23.6.0",
+    "prettier": "^1.15.3"
+  }
+}

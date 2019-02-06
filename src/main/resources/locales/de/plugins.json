@@ -1,0 +1,39 @@
+{
+  "scm-support-plugin": {
+    "title": "Support",
+    "subtitle": "Support Informationen für diese SCM-Manager Instanz",
+    "collect": {
+      "help": "Beinhaltet die folgenden Informationen zu dieser Instanz des SCM-Manager:",
+      "helpItem": {
+        "sysInfo": "Generelle System Informationen",
+        "support": "Support relevante Informationen",
+        "plugins": "Installierte Plugins",
+        "stackTrace": "Stack Traces"
+      },
+      "button": "Laden"
+    },
+    "log": {
+      "help": "Schaltet das Logging-Level auf Trace und sammelt die Logs für eine bestimmte Zeit. Drücken Sie auf Start, um diesen Prozess zu aktivieren. Die Ergebnisse werden heruntergeladen, wenn SIe auf Stopp drücken. Zusätzlich erhalten Sie die oben genannten Informationen.",
+      "warning": "Bitte beachten Sie, dass dieses die Instanz des SCM-Manager verlangsamen kann.",
+      "startButton": "Start",
+      "stopButton": "Stopp",
+      "startSuccess": "Logging wurde erfolgreich gestartet.",
+      "startFailed": "Logging konnte nicht gestartet werden.",
+      "stopSuccess": "Logging wurde erfolgreich beendet.",
+      "loading": "Logs werden verarbeitet..."
+    },
+    "primary-navigation": "Support"
+  },
+  "permissions": {
+    "support": {
+      "information": {
+        "displayName": "Support-Informationen abrufen",
+        "description": "Kann Support Informationen wie System Information, installierte Plugins und Stack Traces lesen"
+      },
+      "logging": {
+        "displayName": "Trace Logging starten and stoppen",
+        "description": "Kann das Trace-Logging starten und stoppen und diese Logs lesen"
+      }
+    }
+  }
+}

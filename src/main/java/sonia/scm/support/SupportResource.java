@@ -31,23 +31,15 @@
 
 package sonia.scm.support;
 
-//~--- non-JDK imports --------------------------------------------------------
 
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 import com.google.inject.Inject;
-
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.subject.Subject;
-
-import sonia.scm.security.Role;
+import de.otto.edison.hal.Link;
+import de.otto.edison.hal.Links;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sonia.scm.store.Blob;
-
-//~--- JDK imports ------------------------------------------------------------
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -57,112 +49,86 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlRootElement;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  *
  * @author Sebastian Sdorra
  */
-@Path("plugins/support")
+@Path("v2/plugins/support")
 public class SupportResource
 {
 
-  /** Field description */
+  private static final Logger log = LoggerFactory.getLogger(SupportResource.class);
+
   private static final String MEDIA_TYPE_ZIP = "application/zip";
 
-  //~--- constructors ---------------------------------------------------------
-
-  /**
-   * Constructs ...
-   *
-   *
-   * @param supportManager
-   */
   @Inject
-  public SupportResource(SupportManager supportManager)
+  public SupportResource(SupportManager supportManager, SupportLinks links)
   {
     this.supportManager = supportManager;
-
-    Subject subject = SecurityUtils.getSubject();
-
-    subject.checkRole(Role.ADMIN);
+    this.links = links;
   }
 
-  //~--- methods --------------------------------------------------------------
-
-  /**
-   * Method description
-   *
-   *
-   * @return
-   *
-   * @throws IOException
-   */
   @GET
+  @Path("")
   @Produces(MEDIA_TYPE_ZIP)
-  public Response createSupportFile() throws IOException
+  public Response createSupportFile()
   {
-    return createBlobResponse(supportManager.collectSupportData());
+    SupportPermissions.checkReadInformation();
+    try {
+      return createBlobResponse(supportManager.collectSupportData());
+    } catch (Exception e) {
+      return Response.ok("Could not create information package.\n" + e, MediaType.TEXT_PLAIN_TYPE).build();
+    }
   }
 
-  /**
-   * Method description
-   *
-   *
-   * @return
-   *
-   * @throws IOException
-   */
   @GET
   @Path("logging/disable")
   @Produces(MEDIA_TYPE_ZIP)
-  public Response disableTraceLogging() throws IOException
+  public Response disableTraceLogging()
   {
-    return createBlobResponse(supportManager.disableTraceLogging());
+    SupportPermissions.checkStartLog();
+    log.info("disable trace log");
+    try {
+      return createBlobResponse(supportManager.disableTraceLogging());
+    } catch (Exception e) {
+      return Response.ok("Could not create trace log package.\n" + e, MediaType.TEXT_PLAIN_TYPE).build();
+    }
   }
 
-  /**
-   * Method description
-   *
-   *
-   * @return
-   *
-   * @throws IOException
-   */
   @POST
   @Path("logging/enable")
   public Response enableTraceLogging() throws IOException
   {
+    SupportPermissions.checkStartLog();
+    log.info("enable trace log");
     supportManager.enableTraceLogging();
-
     return Response.noContent().build();
   }
 
-  /**
-   * Method description
-   *
-   *
-   * @return
-   */
   @GET
   @Path("logging")
-  @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-  public LoggingState loggingState()
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response loggingState()
   {
-    return new LoggingState(supportManager.isTraceLoggingEnabled());
+    SupportPermissions.checkStartLog();
+    Links.Builder links = Links.linkingTo()
+      .self(this.links.createLogStatusLink());
+    if (!supportManager.isProcessingLog()) {
+      if (supportManager.isTraceLoggingEnabled()) {
+        links.single(Link.link("stopLog", this.links.createStopLogLink()));
+      } else {
+        links.single(Link.link("startLog", this.links.createStartLogLink()));
+      }
+    }
+    return Response.ok(
+      new LoggingStateDto(supportManager.isTraceLoggingEnabled(), supportManager.isProcessingLog(), links.build()))
+      .build();
   }
 
-  /**
-   * Method description
-   *
-   *
-   * @param blob
-   *
-   * @return
-   */
   private Response createBlobResponse(Blob blob)
   {
     //J-
@@ -170,7 +136,7 @@ public class SupportResource
       new BlobStreamingOutput(blob)
     )
     .header(
-      "Content-Disposition", 
+      "Content-Disposition",
       "attachment; filename=\"".concat(blob.getId()).concat(".zip\"")
     )
     .build();
@@ -179,22 +145,9 @@ public class SupportResource
 
   //~--- inner classes --------------------------------------------------------
 
-  /**
-   * Class description
-   *
-   *
-   * @version        Enter version here..., 14/02/16
-   * @author         Enter your name here...
-   */
   public static class BlobStreamingOutput implements StreamingOutput
   {
 
-    /**
-     * Constructs ...
-     *
-     *
-     * @param blob
-     */
     public BlobStreamingOutput(Blob blob)
     {
       this.blob = blob;
@@ -202,15 +155,6 @@ public class SupportResource
 
     //~--- methods ------------------------------------------------------------
 
-    /**
-     * Method description
-     *
-     *
-     * @param output
-     *
-     * @throws IOException
-     * @throws WebApplicationException
-     */
     @Override
     public void write(OutputStream output)
       throws IOException, WebApplicationException
@@ -228,64 +172,9 @@ public class SupportResource
       }
     }
 
-    //~--- fields -------------------------------------------------------------
-
-    /** Field description */
     private final Blob blob;
   }
 
-
-  /**
-   * Class description
-   *
-   *
-   * @version        Enter version here..., 14/02/18
-   * @author         Enter your name here...
-   */
-  @XmlRootElement
-  @XmlAccessorType(XmlAccessType.FIELD)
-  public static class LoggingState
-  {
-
-    /**
-     * Constructs ...
-     *
-     */
-    public LoggingState() {}
-
-    /**
-     * Constructs ...
-     *
-     *
-     * @param traceLoggingEnabled
-     */
-    public LoggingState(boolean traceLoggingEnabled)
-    {
-      this.traceLoggingEnabled = traceLoggingEnabled;
-    }
-
-    //~--- get methods --------------------------------------------------------
-
-    /**
-     * Method description
-     *
-     *
-     * @return
-     */
-    public boolean isTraceLoggingEnabled()
-    {
-      return traceLoggingEnabled;
-    }
-
-    //~--- fields -------------------------------------------------------------
-
-    /** Field description */
-    private boolean traceLoggingEnabled = false;
-  }
-
-
-  //~--- fields ---------------------------------------------------------------
-
-  /** Field description */
   private final SupportManager supportManager;
+  private final SupportLinks links;
 }
