@@ -15,6 +15,7 @@ type State = {
   stopLogLink?: string,
   startLogSuccess: boolean,
   startLogFailed: boolean,
+  stopLogSuccess: boolean,
   processingLog: boolean
 }
 
@@ -27,6 +28,7 @@ class SupportPage extends React.Component<Props, State> {
       stopLogLink: undefined,
       startLogSuccess: false,
       startLogFailed: false,
+      stopLogSuccess: false,
       processingLog: false
     }
   }
@@ -81,8 +83,18 @@ class SupportPage extends React.Component<Props, State> {
         <DownloadButton displayName={t("scm-support-plugin.collect.button")} url={informationLink}/>
       </div>) : null;
 
-    const canStartLog = !!startLogLink;
-    const canStopLog = !!stopLogLink;
+    const startButton = startLogLink ?
+      <a color="warning" className="button is-large is-link is-warning"
+         onClick={this.startLog}><span>{t("scm-support-plugin.log.startButton")}</span></a> :
+      <a color="warning" className="button is-large is-link is-warning" disabled={true}
+         onClick={() => {}}><span>{t("scm-support-plugin.log.startButton")}</span></a>;
+
+    const downloadButton = stopLogLink ?
+      <DownloadButton displayName={t("scm-support-plugin.log.stopButton")}
+                      url={stopLogLink.href}
+                      disabled={false} onClick={this.stopLog}/> :
+      <DownloadButton displayName={t("scm-support-plugin.log.stopButton")}
+                      disabled={true}/>;
 
     const logPart =
       processingLog ?
@@ -97,11 +109,8 @@ class SupportPage extends React.Component<Props, State> {
             <em className="it-warning">{t("scm-support-plugin.log.warning")}</em>
           </p>
           <br/>
-          <a color="warning" className="button is-large is-link is-warning" disabled={!canStartLog}
-             onClick={this.startLog}><span>{t("scm-support-plugin.log.startButton")}</span></a>
-          <DownloadButton displayName={t("scm-support-plugin.log.stopButton")}
-                          url={!stopLogLink ? "" : stopLogLink.href}
-                          disabled={!canStopLog} onClick={this.stopLog}/>
+          {startButton}
+          {downloadButton}
           <br/>
         </div>);
 
@@ -119,12 +128,13 @@ class SupportPage extends React.Component<Props, State> {
 
   createMessage = () => {
     const {t} = this.props;
-    const {startLogSuccess, startLogFailed} = this.state;
+    const {startLogSuccess, startLogFailed, stopLogSuccess} = this.state;
 
     const onClose = () => {
       this.setState({
         startLogSuccess: false,
-        startLogFailed: false
+        startLogFailed: false,
+        stopLogSuccess: false
       });
     };
 
@@ -133,13 +143,17 @@ class SupportPage extends React.Component<Props, State> {
         <Notification type={"success"} onClose={onClose}>{t("scm-support-plugin.log.startSuccess")}</Notification>);
     } else if (startLogFailed) {
       return (
-        <Notification type={"success"} onClose={onClose}>{t("scm-support-plugin.log.startFailed")}</Notification>);
+        <Notification type={"warning"} onClose={onClose}>{t("scm-support-plugin.log.startFailed")}</Notification>);
+    } else if (stopLogSuccess) {
+      return (
+        <Notification type={"success"} onClose={onClose}>{t("scm-support-plugin.log.stopSuccess")}</Notification>);
     }
     return null;
   };
 
   startLog = (e: Event) => {
     const {startLogLink} = this.state;
+    // if (!startLogLink) return;
     apiClient
       .post(startLogLink.href, "")
       .then(result => {
@@ -161,6 +175,7 @@ class SupportPage extends React.Component<Props, State> {
     this.setState({
       startLogFailed: false,
       startLogSuccess: false,
+      stopLogSuccess: true,
       stopLogLink: undefined,
       processingLog: true
     }, () => {

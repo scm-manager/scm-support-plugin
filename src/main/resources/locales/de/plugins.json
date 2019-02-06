@@ -19,6 +19,7 @@
       "stopButton": "Stopp",
       "startSuccess": "Logging wurde erfolgreich gestartet.",
       "startFailed": "Logging konnte nicht gestartet werden.",
+      "stopSuccess": "Logging wurde erfolgreich beendet.",
       "loading": "Logs werden verarbeitet..."
     },
     "primary-navigation": "Support"

@@ -19,6 +19,7 @@
       "stopButton": "Stop",
       "startSuccess": "Log successfully started",
       "startFailed": "Log could not be started",
+      "stopSuccess": "Log successfully stopped",
       "loading": "Processing logs..."
     },
     "primary-navigation": "Support"
