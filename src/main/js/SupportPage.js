@@ -160,13 +160,14 @@ class SupportPage extends React.Component<Props, State> {
         const startLogSuccess = result.status === 204;
         const startLogFailed = result.status !== 204;
         this.setState({
-          startLogFailed, startLogSuccess
+          startLogFailed, startLogSuccess, stopLogSuccess: false
         }, this.fetchLogStatus);
       })
       .catch(err => {
         this.setState({
           startLogFailed: true,
-          startLogSuccess: false
+          startLogSuccess: false,
+          stopLogSuccess: false
         }, this.fetchLogStatus);
       });
   };
