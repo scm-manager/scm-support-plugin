@@ -30,9 +30,9 @@
         "displayName": "Support-Informationen abrufen",
         "description": "Kann Support Informationen wie System Information, installierte Plugins und Stack Traces lesen"
       },
-      "logging": {
+      "information,logging": {
         "displayName": "Trace Logging starten and stoppen",
-        "description": "Kann das Trace-Logging starten und stoppen und diese Logs lesen"
+        "description": "Kann das Trace-Logging starten und stoppen und diese Logs sowie die Support-Informationen lesen"
       }
     }
   }
