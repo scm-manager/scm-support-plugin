@@ -82,7 +82,7 @@ public class ScmConfigurationCollector implements Collector
   {
     ScmConfiguration cfg = new ScmConfiguration();
 
-    configuration.load(cfg);
+    cfg.load(configuration);
 
     String proxyServer = cfg.getProxyServer();
 
