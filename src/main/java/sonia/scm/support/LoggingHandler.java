@@ -57,7 +57,7 @@ public final class LoggingHandler
   /** Field description */
   private static final ImmutableSet<String> LOGGERNAMES =
     ImmutableSet.of("sonia", "org.eclipse.jgit", "org.tmatesoft.svn", "svnkit",
-      "com.aragost.javahg");
+      "com.aragost.javahg", "com.cloudogu");
 
   public SupportHandler getSupportHandler()
   {
