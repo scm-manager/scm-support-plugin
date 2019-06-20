@@ -144,7 +144,7 @@ class SupportPage extends React.Component<Props, State> {
           <em className="it-warning">{t("scm-support-plugin.log.warning")}</em>
         </p>
         <br />
-        <ButtonGroup connected={false}>
+        <ButtonGroup>
           {startButton}
           {downloadButton}
         </ButtonGroup>
