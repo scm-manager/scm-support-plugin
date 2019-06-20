@@ -1,5 +1,6 @@
 {
   "scm-support-plugin": {
+    "navLink": "Support",
     "title": "Support",
     "subtitle": "Gather support information for this SCM-Manager instance",
     "collect": {
@@ -21,8 +22,7 @@
       "startFailed": "Log could not be started",
       "stopSuccess": "Log successfully stopped",
       "loading": "Processing logs..."
-    },
-    "primary-navigation": "Support"
+    }
   },
   "permissions": {
     "support": {
