@@ -3,7 +3,7 @@ import React from "react";
 import { translate } from "react-i18next";
 import {
   apiClient,
-  ButtonGrouped,
+  ButtonGroup,
   DownloadButton,
   Loading,
   Notification,
@@ -144,10 +144,10 @@ class SupportPage extends React.Component<Props, State> {
           <em className="it-warning">{t("scm-support-plugin.log.warning")}</em>
         </p>
         <br />
-        <ButtonGrouped>
+        <ButtonGroup connected={false}>
           {startButton}
           {downloadButton}
-        </ButtonGrouped>
+        </ButtonGroup>
       </div>
     );
 
