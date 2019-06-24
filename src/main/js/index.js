@@ -1,37 +1,34 @@
 // @flow
 import React from "react";
+import { Route } from "react-router-dom";
 import { binder } from "@scm-manager/ui-extensions";
-import { ProtectedRoute } from "@scm-manager/ui-components";
-import SupportNavigation from "./SupportNavigation";
-import SupportPage from "./SupportPage";
 import type { Links } from "@scm-manager/ui-types";
-
-type RouteProps = {
-  authenticated: boolean,
-  links: Links
-};
-
-const SupportRoute = ({ authenticated, links }: RouteProps) => {
-  return (
-    <>
-      <ProtectedRoute
-        path="/support"
-        component={() => <SupportPage informationLink={links.supportInformation.href} logLink={links.logging.href} />}
-        authenticated={authenticated}
-      />
-    </>
-  );
-};
-
-binder.bind("main.route", SupportRoute);
+import SupportNavLink from "./SupportNavLink";
+import SupportPage from "./SupportPage";
 
 type PredicateProps = {
   links: Links
 };
 
 // @VisibleForTesting
-export const predicate = ({ links }: PredicateProps) => {
+export const supportPredicate = ({ links }: PredicateProps) => {
   return !!(links && (links.supportInformation || links.logging));
 };
 
-binder.bind("primary-navigation", SupportNavigation, predicate);
+const SupportRoute = ({ authenticated, links }) => {
+  return (
+    <Route
+      path="/admin/support"
+      render={() => (
+        <SupportPage
+          informationLink={links.supportInformation.href}
+          logLink={links.logging.href}
+        />
+      )}
+    />
+  );
+};
+
+binder.bind("admin.route", SupportRoute, supportPredicate);
+
+binder.bind("admin.navigation", SupportNavLink, supportPredicate);
