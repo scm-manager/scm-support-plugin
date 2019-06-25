@@ -3,12 +3,11 @@ import React from "react";
 import { translate } from "react-i18next";
 import {
   apiClient,
-  Button,
+  ButtonGroup,
   DownloadButton,
   Loading,
   Notification,
-  Title,
-  Subtitle
+  Page
 } from "@scm-manager/ui-components";
 
 type Props = {
@@ -145,20 +144,22 @@ class SupportPage extends React.Component<Props, State> {
           <em className="it-warning">{t("scm-support-plugin.log.warning")}</em>
         </p>
         <br />
-        {startButton}
-        {downloadButton}
-        <br />
+        <ButtonGroup>
+          {startButton}
+          {downloadButton}
+        </ButtonGroup>
       </div>
     );
 
     return (
-      <>
-        <Title title={t("scm-support-plugin.title")} />
-        <Subtitle subtitle={t("scm-support-plugin.subtitle")} />
+      <Page
+        title={t("scm-support-plugin.title")}
+        subtitle={t("scm-support-plugin.subtitle")}
+      >
         {message}
         {informationPart}
         {logPart}
-      </>
+      </Page>
     );
   }
 
