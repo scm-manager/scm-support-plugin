@@ -3,11 +3,12 @@ import React from "react";
 import { translate } from "react-i18next";
 import {
   apiClient,
+  Title,
+  Subtitle,
   ButtonGroup,
   DownloadButton,
   Loading,
-  Notification,
-  Page
+  Notification
 } from "@scm-manager/ui-components";
 
 type Props = {
@@ -121,7 +122,6 @@ class SupportPage extends React.Component<Props, State> {
       <DownloadButton
         displayName={t("scm-support-plugin.log.stopButton")}
         url={stopLogLink.href}
-        disabled={false}
         onClick={this.stopLog}
       />
     ) : (
@@ -152,14 +152,13 @@ class SupportPage extends React.Component<Props, State> {
     );
 
     return (
-      <Page
-        title={t("scm-support-plugin.title")}
-        subtitle={t("scm-support-plugin.subtitle")}
-      >
+      <>
+        <Title title={t("scm-support-plugin.title")} />
+        <Subtitle subtitle={t("scm-support-plugin.subtitle")} />
         {message}
         {informationPart}
         {logPart}
-      </Page>
+      </>
     );
   }
 
