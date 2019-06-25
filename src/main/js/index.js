@@ -15,7 +15,7 @@ export const supportPredicate = ({ links }: PredicateProps) => {
   return !!(links && (links.supportInformation || links.logging));
 };
 
-const SupportRoute = ({ authenticated, links }) => {
+const SupportRoute = ({ links }) => {
   return (
     <Route
       path="/admin/support"
