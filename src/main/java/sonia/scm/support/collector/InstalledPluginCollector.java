@@ -77,7 +77,7 @@ public class InstalledPluginCollector extends WriterCollector
   {
     for (PluginInformation plugin : pluginManager.getInstalled())
     {
-      writer.println(plugin.getId(true));
+      writer.println(plugin.getId());
     }
   }
 
