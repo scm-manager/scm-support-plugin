@@ -31,15 +31,10 @@
 
 package sonia.scm.support.collector;
 
-//~--- non-JDK imports --------------------------------------------------------
-
 import com.google.inject.Inject;
-
 import sonia.scm.plugin.Extension;
-import sonia.scm.plugin.PluginInformation;
+import sonia.scm.plugin.InstalledPlugin;
 import sonia.scm.plugin.PluginManager;
-
-//~--- JDK imports ------------------------------------------------------------
 
 import java.io.PrintWriter;
 
@@ -75,7 +70,7 @@ public class InstalledPluginCollector extends WriterCollector
   @Override
   protected void collect(PrintWriter writer)
   {
-    for (PluginInformation plugin : pluginManager.getInstalled())
+    for (InstalledPlugin plugin : pluginManager.getInstalled())
     {
       writer.println(plugin.getId());
     }
