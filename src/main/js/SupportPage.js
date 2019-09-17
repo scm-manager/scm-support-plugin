@@ -8,7 +8,8 @@ import {
   ButtonGroup,
   DownloadButton,
   Loading,
-  Notification
+  Notification,
+  Button
 } from "@scm-manager/ui-components";
 
 type Props = {
@@ -91,31 +92,26 @@ class SupportPage extends React.Component<Props, State> {
           <li>{t("scm-support-plugin.collect.helpItem.plugins")}</li>
           <li>{t("scm-support-plugin.collect.helpItem.stackTrace")}</li>
         </ul>
-        <br />
-        <DownloadButton
-          displayName={t("scm-support-plugin.collect.button")}
-          url={informationLink}
-        />
+        <div className="level">
+          <div className="level-left" />
+          <div className="level-right">
+            <DownloadButton
+              displayName={t("scm-support-plugin.collect.button")}
+              url={informationLink}
+            />
+          </div>
+        </div>
       </div>
     ) : null;
 
     const startButton = startLogLink ? (
-      <a
-        color="warning"
-        className="button is-large is-link is-warning"
-        onClick={this.startLog}
-      >
-        <span>{t("scm-support-plugin.log.startButton")}</span>
-      </a>
+      <Button action={this.startLog} color="warning">
+        {t("scm-support-plugin.log.startButton")}
+      </Button>
     ) : (
-      <a
-        color="warning"
-        className="button is-large is-link is-warning"
-        disabled={true}
-        onClick={() => {}}
-      >
-        <span>{t("scm-support-plugin.log.startButton")}</span>
-      </a>
+      <Button color="warning" disabled={true}>
+        {t("scm-support-plugin.log.startButton")}
+      </Button>
     );
 
     const downloadButton = stopLogLink ? (
@@ -140,14 +136,18 @@ class SupportPage extends React.Component<Props, State> {
         <p>
           <span className="icon has-text-warning">
             <i className="fas fa-exclamation-triangle" />
-          </span>
+          </span>{" "}
           <em className="it-warning">{t("scm-support-plugin.log.warning")}</em>
         </p>
-        <br />
-        <ButtonGroup>
-          {startButton}
-          {downloadButton}
-        </ButtonGroup>
+        <div className="level">
+          <div className="level-left" />
+          <div className="level-right">
+            <ButtonGroup>
+              {startButton}
+              {downloadButton}
+            </ButtonGroup>
+          </div>
+        </div>
       </div>
     );
 
