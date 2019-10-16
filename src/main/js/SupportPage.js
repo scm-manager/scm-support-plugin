@@ -1,8 +1,6 @@
 //@flow
 import React from "react";
 import { translate } from "react-i18next";
-import injectSheet from "react-jss";
-import classNames from "classnames";
 import {
   apiClient,
   Title,
@@ -13,14 +11,18 @@ import {
   Notification,
   Button
 } from "@scm-manager/ui-components";
+import styled from "styled-components";
+
+const LevelFlexEnd = styled.div`
+align-self: flex-end;
+`;
 
 type Props = {
   informationLink?: string,
   logLink?: string,
 
   // context props
-  t: string => string,
-  classes: any
+  t: string => string
 };
 
 type State = {
@@ -30,12 +32,6 @@ type State = {
   startLogFailed: boolean,
   stopLogSuccess: boolean,
   processingLog: boolean
-};
-
-const styles = {
-  levelFlexEnd: {
-    alignSelf: "flex-end"
-  }
 };
 
 class SupportPage extends React.Component<Props, State> {
@@ -87,7 +83,7 @@ class SupportPage extends React.Component<Props, State> {
   };
 
   render() {
-    const { informationLink, t, classes } = this.props;
+    const { informationLink, t } = this.props;
     const { startLogLink, stopLogLink, processingLog } = this.state;
 
     const message = this.createMessage();
@@ -105,12 +101,12 @@ class SupportPage extends React.Component<Props, State> {
               <li>{t("scm-support-plugin.collect.helpItem.stackTrace")}</li>
             </ul>
           </div>
-          <div className={classNames("level-right", classes.levelFlexEnd)}>
+          <LevelFlexEnd className="level-right">
             <DownloadButton
               displayName={t("scm-support-plugin.collect.button")}
               url={informationLink}
             />
-          </div>
+          </LevelFlexEnd>
         </div>
       </div>
     ) : null;
@@ -253,4 +249,4 @@ class SupportPage extends React.Component<Props, State> {
   };
 }
 
-export default injectSheet(styles)(translate("plugins")(SupportPage));
+export default translate("plugins")(SupportPage);
