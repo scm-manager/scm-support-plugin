@@ -1,13 +1,12 @@
-// @flow
 import React from "react";
 import { Route } from "react-router-dom";
 import { binder } from "@scm-manager/ui-extensions";
-import type { Links } from "@scm-manager/ui-types";
+import { Links } from "@scm-manager/ui-types";
 import SupportNavLink from "./SupportNavLink";
 import SupportPage from "./SupportPage";
 
 type PredicateProps = {
-  links: Links
+  links: Links;
 };
 
 // @VisibleForTesting
@@ -19,12 +18,7 @@ const SupportRoute = ({ links }) => {
   return (
     <Route
       path="/admin/support"
-      render={() => (
-        <SupportPage
-          informationLink={links.supportInformation.href}
-          logLink={links.logging.href}
-        />
-      )}
+      render={() => <SupportPage informationLink={links.supportInformation.href} logLink={links.logging.href} />}
     />
   );
 };

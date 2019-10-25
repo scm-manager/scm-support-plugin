@@ -1,10 +1,10 @@
-// @flow
-
 import { supportPredicate } from "./index";
 
 describe("test predicate", () => {
   const exec = links => {
-    return supportPredicate({ links });
+    return supportPredicate({
+      links
+    });
   };
 
   it("should return true", () => {

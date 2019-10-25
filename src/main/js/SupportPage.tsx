@@ -1,6 +1,5 @@
-//@flow
 import React from "react";
-import { translate } from "react-i18next";
+import { WithTranslation, withTranslation } from "react-i18next";
 import {
   apiClient,
   Title,
@@ -14,24 +13,21 @@ import {
 import styled from "styled-components";
 
 const LevelFlexEnd = styled.div`
-align-self: flex-end;
+  align-self: flex-end;
 `;
 
-type Props = {
-  informationLink?: string,
-  logLink?: string,
-
-  // context props
-  t: string => string
+type Props = WithTranslation & {
+  informationLink?: string;
+  logLink?: string;
 };
 
 type State = {
-  startLogLink?: string,
-  stopLogLink?: string,
-  startLogSuccess: boolean,
-  startLogFailed: boolean,
-  stopLogSuccess: boolean,
-  processingLog: boolean
+  startLogLink?: string;
+  stopLogLink?: string;
+  startLogSuccess: boolean;
+  startLogFailed: boolean;
+  stopLogSuccess: boolean;
+  processingLog: boolean;
 };
 
 class SupportPage extends React.Component<Props, State> {
@@ -102,10 +98,7 @@ class SupportPage extends React.Component<Props, State> {
             </ul>
           </div>
           <LevelFlexEnd className="level-right">
-            <DownloadButton
-              displayName={t("scm-support-plugin.collect.button")}
-              url={informationLink}
-            />
+            <DownloadButton displayName={t("scm-support-plugin.collect.button")} url={informationLink} />
           </LevelFlexEnd>
         </div>
       </div>
@@ -128,10 +121,7 @@ class SupportPage extends React.Component<Props, State> {
         onClick={this.stopLog}
       />
     ) : (
-      <DownloadButton
-        displayName={t("scm-support-plugin.log.stopButton")}
-        disabled={true}
-      />
+      <DownloadButton displayName={t("scm-support-plugin.log.stopButton")} disabled={true} />
     );
 
     const logPart = processingLog ? (
@@ -249,4 +239,4 @@ class SupportPage extends React.Component<Props, State> {
   };
 }
 
-export default translate("plugins")(SupportPage);
+export default withTranslation("plugins")(SupportPage);
