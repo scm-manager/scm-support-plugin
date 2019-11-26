@@ -14,10 +14,10 @@
       "button": "Laden"
     },
     "log": {
-      "help": "Schaltet das Logging-Level auf Trace und sammelt die Logs für eine bestimmte Zeit. Drücken Sie auf Start, um diesen Prozess zu aktivieren. Die Ergebnisse werden heruntergeladen, wenn SIe auf Stopp drücken. Zusätzlich erhalten Sie die oben genannten Informationen.",
-      "warning": "Bitte beachten Sie, dass dieses die Instanz des SCM-Manager verlangsamen kann.",
+      "help": "Schaltet das Logging-Level auf Trace und sammelt die Logs für eine bestimmte Zeit. Drücken Sie auf Start, um diesen Prozess zu aktivieren. Die Ergebnisse werden heruntergeladen, wenn Sie auf \"Stopp und Laden\" drücken. Zusätzlich erhalten Sie die oben genannten Informationen.",
+      "warning": "Bitte beachten Sie, dass dies die Instanz des SCM-Manager verlangsamen kann.",
       "startButton": "Start",
-      "stopButton": "Stopp",
+      "stopButton": "Stopp und Laden",
       "startSuccess": "Logging wurde erfolgreich gestartet.",
       "startFailed": "Logging konnte nicht gestartet werden.",
       "stopSuccess": "Logging wurde erfolgreich beendet.",
