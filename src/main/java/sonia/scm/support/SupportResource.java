@@ -117,7 +117,7 @@ public class SupportResource {
     )
   )
   @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
-  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"support:information\" privilege")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"support:logging\" privilege")
   @ApiResponse(
     responseCode = "500",
     description = "internal server error",
@@ -170,7 +170,7 @@ public class SupportResource {
     )
   )
   @ApiResponse(responseCode = "401", description = "not authenticated / invalid credentials")
-  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"support:information\" privilege")
+  @ApiResponse(responseCode = "403", description = "not authorized, the current user does not have the \"support:logging\" privilege")
   @ApiResponse(
     responseCode = "500",
     description = "internal server error",
