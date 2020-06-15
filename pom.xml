@@ -36,7 +36,7 @@
 
   <artifactId>scm-support-plugin</artifactId>
   <packaging>smp</packaging>
-  <version>2.0.0</version>
+  <version>2.0.1-SNAPSHOT</version>
   <name>${project.artifactId}</name>
   <description>Collects information for support cases</description>
   <url>https://github.com/scm-manager/scm-support-plugin</url>
