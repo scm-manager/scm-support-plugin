@@ -1,0 +1,2 @@
+- type: changed
+  description: Use logging pattern with transaction id ([#34](https://github.com/scm-manager/scm-support-plugin/pull/34))
