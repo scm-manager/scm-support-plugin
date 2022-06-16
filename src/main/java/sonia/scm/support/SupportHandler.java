@@ -59,7 +59,7 @@ public class SupportHandler implements Closeable
 
   /** Field description */
   private static final String PATTERN =
-    "%d{HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n";
+    "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%-10X{transaction_id}] %-5level %logger - %msg%n";
 
   //~--- constructors ---------------------------------------------------------
 
