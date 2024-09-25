@@ -14,21 +14,12 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import React, { FC } from "react";
-import { useTranslation } from "react-i18next";
-import { SecondaryNavigationItem } from "@scm-manager/ui-components";
+import {Links} from "@scm-manager/ui-types";
 
-const SupportNavLink: FC = () => {
-  const [t] = useTranslation("plugins");
-
-  return (
-    <SecondaryNavigationItem
-      to={`/admin/support`}
-      icon="fas fa-life-ring"
-      label={t("scm-support-plugin.navLink")}
-      title={t("scm-support-plugin.navLink")}
-    />
-  );
+export type PredicateProps = {
+  links: Links;
 };
 
-export default SupportNavLink;
+export const supportPredicate = ({ links }: PredicateProps) => {
+  return !!(links && (links.supportInformation || links.logging));
+};

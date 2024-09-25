@@ -1,214 +1,92 @@
 /*
- * MIT License
+ * Copyright (c) 2020 - present Cloudogu GmbH
  *
- * Copyright (c) 2020-present Cloudogu GmbH and Contributors
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU Affero General Public License as published by the Free
+ * Software Foundation, version 3.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+ * details.
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/.
  */
-import React from "react";
-import { WithTranslation, withTranslation } from "react-i18next";
-import {
-  apiClient,
-  Title,
-  Subtitle,
-  ButtonGroup,
-  DownloadButton,
-  Loading,
-  Notification,
-  Button
-} from "@scm-manager/ui-components";
-import styled from "styled-components";
 
-const LevelFlexEnd = styled.div`
-  align-self: flex-end;
-`;
+import React, { FC, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Button, Level, Loading, Notification, Subtitle, Title } from "@scm-manager/ui-core";
+import { apiClient, DownloadButton } from "@scm-manager/ui-components";
+import { Link } from "@scm-manager/ui-types";
 
-type Props = WithTranslation & {
+type Props = {
   informationLink?: string;
   logLink?: string;
 };
 
-type State = {
-  startLogLink?: string;
-  stopLogLink?: string;
-  startLogSuccess: boolean;
-  startLogFailed: boolean;
-  stopLogSuccess: boolean;
-  processingLog: boolean;
-};
+const SupportPage: FC<Props> = ({ informationLink, logLink }) => {
+  const [t] = useTranslation("plugins");
 
-class SupportPage extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      startLogLink: undefined,
-      stopLogLink: undefined,
-      startLogSuccess: false,
-      startLogFailed: false,
-      stopLogSuccess: false,
-      processingLog: false
-    };
-  }
+  const [startLogLink, setStartLogLink] = useState<Link | undefined>(undefined);
+  const [stopLogLink, setStopLogLink] = useState<Link | undefined>(undefined);
+  const [startLogSuccess, setStartLogSuccess] = useState<boolean>(false);
+  const [startLogFailed, setStartLogFailed] = useState<boolean>(false);
+  const [stopLogSuccess, setStopLogSuccess] = useState<boolean>(false);
+  const [processingLog, setProcessingLog] = useState<boolean>(false);
 
-  componentDidMount(): void {
-    if (!!this.props.logLink) {
-      this.fetchLogStatus();
+  useEffect(() => {
+    if (!!logLink) {
+      fetchLogStatus();
     }
-  }
+  }, [logLink]);
 
-  fetchLogStatus = () => {
+  const fetchLogStatus = () => {
     apiClient
-      .get(this.props.logLink)
+      .get(logLink!)
       .then(result => result.json())
       .then(logLinks => {
-        this.setState(
-          {
-            startLogLink: logLinks._links.startLog,
-            stopLogLink: logLinks._links.stopLog,
-            processingLog: logLinks.processingLog
-          },
-          () => {
-            if (this.state.processingLog) {
-              this.updateLogStatusAfterWait();
-            }
-          }
-        );
+        setStartLogLink(logLinks._links.startLog);
+        setStopLogLink(logLinks._links.stopLog);
+        setProcessingLog(logLinks.processingLog);
+
+        if (processingLog) {
+          updateLogStatusAfterWait();
+        }
       });
   };
 
-  updateLogStatusAfterWait = async () => {
+  const updateLogStatusAfterWait = async () => {
     setTimeout(
       function() {
-        this.fetchLogStatus();
+        fetchLogStatus();
       }.bind(this),
       1000
     );
   };
 
-  render() {
-    const { informationLink, t } = this.props;
-    const { startLogLink, stopLogLink, processingLog } = this.state;
-
-    const message = this.createMessage();
-
-    const informationPart = !!informationLink ? (
-      <div className="content">
-        <hr />
-        <p>{t("scm-support-plugin.collect.help")}</p>
-        <div className="level">
-          <div className="level-left">
-            <ul>
-              <li>{t("scm-support-plugin.collect.helpItem.sysInfo")}</li>
-              <li>{t("scm-support-plugin.collect.helpItem.support")}</li>
-              <li>{t("scm-support-plugin.collect.helpItem.plugins")}</li>
-              <li>{t("scm-support-plugin.collect.helpItem.stackTrace")}</li>
-            </ul>
-          </div>
-          <LevelFlexEnd className="level-right">
-            <DownloadButton displayName={t("scm-support-plugin.collect.button")} url={informationLink} />
-          </LevelFlexEnd>
-        </div>
-      </div>
-    ) : null;
-
-    const startButton = startLogLink ? (
-      <Button action={this.startLog} color="warning">
-        {t("scm-support-plugin.log.startButton")}
-      </Button>
-    ) : (
-      <Button color="warning" disabled={true}>
-        {t("scm-support-plugin.log.startButton")}
-      </Button>
-    );
-
-    const downloadButton = stopLogLink ? (
-      <DownloadButton
-        displayName={t("scm-support-plugin.log.stopButton")}
-        url={stopLogLink.href}
-        onClick={this.stopLog}
-      />
-    ) : (
-      <DownloadButton displayName={t("scm-support-plugin.log.stopButton")} disabled={true} />
-    );
-
-    const logPart = processingLog ? (
-      <Loading message={t("scm-support-plugin.log.loading")} />
-    ) : (
-      <div className="content">
-        <hr />
-        <p>{t("scm-support-plugin.log.help")}</p>
-        <p>
-          <span className="icon has-text-warning">
-            <i className="fas fa-exclamation-triangle" />
-          </span>{" "}
-          <em className="it-warning">{t("scm-support-plugin.log.warning")}</em>
-        </p>
-        <div className="level">
-          <div className="level-left" />
-          <div className="level-right">
-            <ButtonGroup>
-              {startButton}
-              {downloadButton}
-            </ButtonGroup>
-          </div>
-        </div>
-      </div>
-    );
-
-    return (
-      <>
-        <Title title={t("scm-support-plugin.title")} />
-        <Subtitle subtitle={t("scm-support-plugin.subtitle")} />
-        {message}
-        {informationPart}
-        {logPart}
-      </>
-    );
-  }
-
-  createMessage = () => {
-    const { t } = this.props;
-    const { startLogSuccess, startLogFailed, stopLogSuccess } = this.state;
-
+  const createMessage = () => {
     const onClose = () => {
-      this.setState({
-        startLogSuccess: false,
-        startLogFailed: false,
-        stopLogSuccess: false
-      });
+      setStartLogSuccess(false);
+      setStartLogFailed(false);
+      setStopLogSuccess(false);
     };
 
     if (startLogSuccess) {
       return (
-        <Notification type={"success"} onClose={onClose}>
+        <Notification type="success" onClose={onClose}>
           {t("scm-support-plugin.log.startSuccess")}
         </Notification>
       );
     } else if (startLogFailed) {
       return (
-        <Notification type={"warning"} onClose={onClose}>
+        <Notification type="warning" onClose={onClose}>
           {t("scm-support-plugin.log.startFailed")}
         </Notification>
       );
     } else if (stopLogSuccess) {
       return (
-        <Notification type={"success"} onClose={onClose}>
+        <Notification type="success" onClose={onClose}>
           {t("scm-support-plugin.log.stopSuccess")}
         </Notification>
       );
@@ -216,50 +94,103 @@ class SupportPage extends React.Component<Props, State> {
     return null;
   };
 
-  startLog = (e: Event) => {
-    const { startLogLink } = this.state;
-    // if (!startLogLink) return;
+  const startLog = () => {
     apiClient
-      .post(startLogLink.href, "")
+      .post((startLogLink as Link)?.href, "")
       .then(result => {
         const startLogSuccess = result.status === 204;
         const startLogFailed = result.status !== 204;
-        this.setState(
-          {
-            startLogFailed,
-            startLogSuccess,
-            stopLogSuccess: false
-          },
-          this.fetchLogStatus
-        );
+
+        setStartLogFailed(startLogFailed);
+        setStartLogSuccess(startLogSuccess);
+        setStopLogSuccess(false);
+        fetchLogStatus();
       })
       .catch(err => {
-        this.setState(
-          {
-            startLogFailed: true,
-            startLogSuccess: false,
-            stopLogSuccess: false
-          },
-          this.fetchLogStatus
-        );
+        setStartLogFailed(true);
+        setStartLogSuccess(false);
+        setStopLogSuccess(false);
+        fetchLogStatus();
       });
   };
 
-  stopLog = () => {
-    this.setState(
-      {
-        startLogFailed: false,
-        startLogSuccess: false,
-        stopLogSuccess: true,
-        stopLogLink: undefined,
-        processingLog: true
-      },
-      () => {
-        this.updateLogStatusAfterWait();
-      }
-    );
+  const stopLog = () => {
+    setStartLogFailed(false);
+    setStartLogSuccess(false);
+    setStopLogSuccess(true);
+    setStopLogLink(undefined);
+    setProcessingLog(true);
+    updateLogStatusAfterWait().then(r => console.log(r));
     return true;
   };
-}
 
-export default withTranslation("plugins")(SupportPage);
+  const message = createMessage();
+
+  const informationPart = !!informationLink ? (
+    <div className="content">
+      <hr />
+      <p>{t("scm-support-plugin.collect.help")}</p>
+      <div className="level">
+        <div className="level-left">
+          <ul>
+            <li>{t("scm-support-plugin.collect.helpItem.sysInfo")}</li>
+            <li>{t("scm-support-plugin.collect.helpItem.support")}</li>
+            <li>{t("scm-support-plugin.collect.helpItem.plugins")}</li>
+            <li>{t("scm-support-plugin.collect.helpItem.stackTrace")}</li>
+          </ul>
+        </div>
+        <Level right={<DownloadButton displayName={t("scm-support-plugin.collect.button")} url={informationLink} />} />
+      </div>
+    </div>
+  ) : null;
+
+  const startButton = startLogLink ? (
+    <Button onClick={() => startLog()} variant="signal">
+      {t("scm-support-plugin.log.startButton")}
+    </Button>
+  ) : (
+    <Button variant="signal" disabled={true}>
+      {t("scm-support-plugin.log.startButton")}
+    </Button>
+  );
+
+  const downloadButton = stopLogLink ? (
+    <DownloadButton displayName={t("scm-support-plugin.log.stopButton")} url={stopLogLink.href} onClick={stopLog} />
+  ) : (
+    <DownloadButton displayName={t("scm-support-plugin.log.stopButton")} disabled={true} />
+  );
+
+  const logPart = processingLog ? (
+    <Loading message={t("scm-support-plugin.log.loading")} />
+  ) : (
+    <div className="content">
+      <hr />
+      <p>{t("scm-support-plugin.log.help")}</p>
+      <p>
+        <span className="icon has-text-warning">
+          <i className="fas fa-exclamation-triangle" />
+        </span>{" "}
+        <em className="it-warning">{t("scm-support-plugin.log.warning")}</em>
+      </p>
+      <Level
+        right={
+          <div className="buttons">
+            {startButton}
+            {downloadButton}
+          </div>
+        }
+      />
+    </div>
+  );
+
+  return (
+    <>
+      <Title>{t("scm-support-plugin.title")}</Title>
+      <Subtitle>{t("scm-support-plugin.subtitle")}</Subtitle>
+      {message}
+      {informationPart}
+      {logPart}
+    </>
+  );
+};
+export default SupportPage;
