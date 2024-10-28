@@ -4,18 +4,18 @@
     "title": "Support",
     "subtitle": "Gather support information for this SCM-Manager instance",
     "collect": {
-      "help": "Will give you the following information about this SCM Manager instance:",
+      "help": "Will give you the following information about this SCM-Manager instance:",
       "helpItem": {
-        "sysInfo": "general system information",
-        "support": "support relevant information",
-        "plugins": "installed plugins",
-        "stackTrace": "stack traces"
+        "sysInfo": "General system information",
+        "support": "Relevant information for support",
+        "plugins": "Installed plugins",
+        "stackTrace": "Stack traces"
       },
       "button": "Collect"
     },
     "log": {
-      "help": "Switch logging to trace level and gather a lot of logs for a limited time. To do this, enable the log. You will get the results when you switch it off again. Additionally this will give you the informations from above.",
-      "warning": "Please keep in mind, that this may slow down this instance!",
+      "help": "Switch logging to trace level and gather a lot of logs for a limited time. To do this, enable the log. You will get the results when you switch it off again. Additionally, this will give you the information as listed above.",
+      "warning": "Please keep in mind that this may slow down this SCM-Manager instance.",
       "startButton": "Start",
       "stopButton": "Stop and Collect",
       "startSuccess": "Log successfully started",
@@ -32,7 +32,7 @@
       },
       "information,logging": {
         "displayName": "Start and stop trace logging",
-        "description": "May start and stop trace level system logging and read these logs and other support informations"
+        "description": "May start and stop trace level system logging and read these logs and other support information"
       }
     }
   }

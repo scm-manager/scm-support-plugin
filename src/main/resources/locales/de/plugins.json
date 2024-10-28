@@ -2,12 +2,12 @@
   "scm-support-plugin": {
     "navLink": "Support",
     "title": "Support",
-    "subtitle": "Support Informationen für diese SCM-Manager Instanz",
+    "subtitle": "Supportinformationen für diese SCM-Manager-Instanz",
     "collect": {
-      "help": "Beinhaltet die folgenden Informationen zu dieser Instanz des SCM-Manager:",
+      "help": "Beinhaltet die folgenden Informationen zu dieser Instanz des SCM-Managers:",
       "helpItem": {
-        "sysInfo": "Generelle System Informationen",
-        "support": "Support relevante Informationen",
+        "sysInfo": "Generelle Systeminformationen",
+        "support": "Supportrelevante Informationen",
         "plugins": "Installierte Plugins",
         "stackTrace": "Stack Traces"
       },
@@ -15,7 +15,7 @@
     },
     "log": {
       "help": "Schaltet das Logging-Level auf Trace und sammelt die Logs für eine bestimmte Zeit. Drücken Sie auf Start, um diesen Prozess zu aktivieren. Die Ergebnisse werden heruntergeladen, wenn Sie auf \"Stopp und Laden\" drücken. Zusätzlich erhalten Sie die oben genannten Informationen.",
-      "warning": "Bitte beachten Sie, dass dies die Instanz des SCM-Manager verlangsamen kann.",
+      "warning": "Bitte beachten Sie, dass dies die Instanz des SCM-Managers verlangsamen kann.",
       "startButton": "Start",
       "stopButton": "Stopp und Laden",
       "startSuccess": "Logging wurde erfolgreich gestartet.",
@@ -27,12 +27,12 @@
   "permissions": {
     "support": {
       "information": {
-        "displayName": "Support-Informationen abrufen",
-        "description": "Kann Support Informationen wie System Information, installierte Plugins und Stack Traces lesen"
+        "displayName": "Supportinformationen abrufen",
+        "description": "Kann Supportinformationen wie Systeminformationen, installierte Plugins und Stack Traces lesen"
       },
       "information,logging": {
-        "displayName": "Trace Logging starten and stoppen",
-        "description": "Kann das Trace-Logging starten und stoppen und diese Logs sowie die Support-Informationen lesen"
+        "displayName": "Trace-Logging starten und stoppen",
+        "description": "Kann das Trace-Logging starten und stoppen und diese Logs sowie die Supportinformationen lesen"
       }
     }
   }
