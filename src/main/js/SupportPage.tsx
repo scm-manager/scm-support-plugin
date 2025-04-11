@@ -16,7 +16,7 @@
 
 import React, { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Level, Loading, Notification, Subtitle, Title } from "@scm-manager/ui-core";
+import { Button, Level, Loading, Notification, Subtitle, Title, useDocumentTitle } from "@scm-manager/ui-core";
 import { apiClient, DownloadButton } from "@scm-manager/ui-components";
 import { Link } from "@scm-manager/ui-types";
 
@@ -34,6 +34,8 @@ const SupportPage: FC<Props> = ({ informationLink, logLink }) => {
   const [startLogFailed, setStartLogFailed] = useState<boolean>(false);
   const [stopLogSuccess, setStopLogSuccess] = useState<boolean>(false);
   const [processingLog, setProcessingLog] = useState<boolean>(false);
+
+  useDocumentTitle(t("scm-support-plugin.title"));
 
   useEffect(() => {
     if (!!logLink) {
