@@ -20,7 +20,7 @@ plugins {
 
 dependencies {
   testImplementation "sonia.scm:scm-test:${scmPlugin.scmVersion}"
-  compileOnly "ch.qos.logback:logback-classic:1.0.13"
+  compileOnly "ch.qos.logback:logback-classic:1.5.26"
 }
 
 scmPlugin {
