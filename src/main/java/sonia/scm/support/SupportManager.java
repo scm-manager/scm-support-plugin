@@ -16,90 +16,71 @@
 
 package sonia.scm.support;
 
-//~--- non-JDK imports --------------------------------------------------------
-
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.Closeables;
 import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
+import lombok.extern.slf4j.Slf4j;
+import sonia.scm.ContextEntry;
+import sonia.scm.EagerSingleton;
+import sonia.scm.NotFoundException;
+import sonia.scm.plugin.Extension;
+import sonia.scm.schedule.Scheduler;
 import sonia.scm.store.Blob;
 import sonia.scm.store.BlobStore;
 import sonia.scm.store.BlobStoreFactory;
 import sonia.scm.support.collector.Collector;
 import sonia.scm.support.collector.CollectorContext;
 
-//~--- JDK imports ------------------------------------------------------------
-
 import java.io.IOException;
-
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
-/**
- *
- * @author Sebastian Sdorra
- */
-@Singleton
-public final class SupportManager
-{
+import static java.util.Optional.ofNullable;
+import static sonia.scm.ScmConstraintViolationException.Builder.doThrow;
 
-  /** Field description */
+@Slf4j
+@Extension
+@EagerSingleton
+class SupportManager {
+
   private static final String NAME = "support";
+  private static final String HOURLY = "0 0 * * * ?";
 
-  //~--- constructors ---------------------------------------------------------
+  private final BlobStore blobStore;
+  private final Set<Collector> collectors;
 
-  /**
-   * Constructs ...
-   *
-   * @param blobStoreFactory
-   * @param collectors
-   */
+  private boolean processingLog = false;
+  private LoggingHandler loggingHandler;
+
   @Inject
-  public SupportManager(BlobStoreFactory blobStoreFactory,
-    Set<Collector> collectors)
-  {
+  public SupportManager(BlobStoreFactory blobStoreFactory, Set<Collector> collectors, Scheduler scheduler) {
     this.blobStore = blobStoreFactory.withName(NAME).build();
     this.collectors = collectors;
+    scheduleCleanUp(scheduler);
   }
 
-  //~--- methods --------------------------------------------------------------
-
-  /**
-   * Method description
-   *
-   *
-   * @return
-   *
-   * @throws IOException
-   */
-  public Blob collectSupportData() throws IOException
-  {
+  public Blob collectSupportData() throws IOException {
     SupportHandler handler = null;
 
-    try
-    {
-      handler = new SupportHandler(blobStore);
+    log.info("gathering support data");
+
+    try {
+      handler = new SupportHandler(blobStore, "simple");
       collectSupportData(handler);
-    }
-    finally
-    {
+    } finally {
       Closeables.close(handler, true);
     }
 
     return handler.getZipBlob();
   }
 
-  /**
-   * Method description
-   *
-   *
-   * @return
-   *
-   * @throws IOException
-   */
-  public synchronized Blob disableTraceLogging() throws IOException
-  {
-    if (loggingHandler == null)
-    {
+  public synchronized Blob disableTraceLogging() throws IOException {
+    log.info("disabling trace logging");
+    if (loggingHandler == null) {
       throw new IllegalStateException("logging handler not set, could not stop");
     }
 
@@ -111,53 +92,25 @@ public final class SupportManager
     }
   }
 
-  private Blob createBlob() throws IOException {
-    SupportHandler supportHandler = loggingHandler.getSupportHandler();
-
-    try
-    {
-      loggingHandler.disable();
-      collectSupportData(supportHandler);
-    }
-    finally
-    {
-      Closeables.close(loggingHandler.getSupportHandler(), true);
-    }
-
-    Blob blob = loggingHandler.getSupportHandler().getZipBlob();
-
-    loggingHandler = null;
-
-    return blob;
+  public Collection<SupportPackage> getAll() {
+    List<SupportPackage> all = blobStore.getAll().stream().map(SupportPackage::from).toList();
+    getCurrentId()
+      .flatMap(runningId -> all.stream().filter(p -> p.getBlob().getId().equals(runningId)).findAny())
+      .ifPresent(p -> p.setRunning(true));
+    return all;
   }
 
-  /**
-   * Method description
-   *
-   *
-   * @throws IOException
-   */
-  public synchronized void enableTraceLogging() throws IOException
-  {
-    if (loggingHandler != null)
-    {
+  public synchronized void enableTraceLogging() throws IOException {
+    log.info("enabling trace logging");
+    if (loggingHandler != null) {
       throw new IllegalStateException("logging handler already set, could not start again");
     }
 
-    loggingHandler = new LoggingHandler(new SupportHandler(blobStore));
+    loggingHandler = new LoggingHandler(new SupportHandler(blobStore, "trace"));
     loggingHandler.enable();
   }
 
-  //~--- get methods ----------------------------------------------------------
-
-  /**
-   * Method description
-   *
-   *
-   * @return
-   */
-  public boolean isTraceLoggingEnabled()
-  {
+  public boolean isTraceLoggingEnabled() {
     return !isProcessingLog() && loggingHandler != null;
   }
 
@@ -165,33 +118,75 @@ public final class SupportManager
     return processingLog;
   }
 
-  //~--- methods --------------------------------------------------------------
+  public SupportPackage get(String id) {
+    return blobStore.getOptional(id)
+      .map(SupportPackage::from)
+      .orElseThrow(() -> NotFoundException.notFound(ContextEntry.ContextBuilder.entity("Support Package", id)));
+  }
 
-  /**
-   * Method description
-   *
-   *
-   * @param supportHandler
-   *
-   * @throws IOException
-   */
-  private void collectSupportData(SupportHandler supportHandler)
-    throws IOException
-  {
-    CollectorContext context =
-      new CollectorContext(supportHandler.getZipOutputStream());
+  public Blob download(String id) {
+    return blobStore.getOptional(id)
+      .orElseThrow(() -> NotFoundException.notFound(ContextEntry.ContextBuilder.entity("Support Package", id)));
+  }
 
-    for (Collector collector : collectors)
-    {
+  public synchronized void delete(String id) {
+    log.info("delete support package {}", id);
+    doThrow().violation("running package cannot be deleted", id).when(isRunning(id));
+    blobStore.remove(id);
+  }
+
+  private boolean isRunning(String blobId) {
+    return getCurrentId()
+      .map(s -> s.equals(blobId))
+      .orElse(false);
+  }
+
+  @VisibleForTesting
+  Optional<String> getCurrentId() {
+    return ofNullable(loggingHandler)
+      .map(LoggingHandler::getSupportHandler)
+      .flatMap(SupportHandler::currentId);
+  }
+
+  private Blob createBlob() throws IOException {
+    log.trace("creating blob");
+    SupportHandler supportHandler = loggingHandler.getSupportHandler();
+
+    try {
+      loggingHandler.disable();
+      collectSupportData(supportHandler);
+    } finally {
+      Closeables.close(loggingHandler.getSupportHandler(), true);
+    }
+
+    Blob blob = loggingHandler.getSupportHandler().getZipBlob();
+
+    loggingHandler = null;
+
+    log.trace("created blob with id {}", blob.getId());
+
+    return blob;
+  }
+
+  private void collectSupportData(SupportHandler supportHandler) throws IOException {
+    CollectorContext context = new CollectorContext(supportHandler.getZipOutputStream());
+
+    for (Collector collector : collectors) {
       collector.collect(context);
     }
   }
 
-  //~--- fields ---------------------------------------------------------------
+  private void cleanUp() {
+    log.debug("clean up support packages");
+    Instant limit = Instant.now().minus(1, ChronoUnit.WEEKS);
+    getAll().stream()
+      .filter(supportPackage -> limit.isAfter(supportPackage.getCreationDate()))
+      .map(SupportPackage::getBlob)
+      .map(Blob::getId)
+      .forEach(this::delete);
+  }
 
-  private final BlobStore blobStore;
-  private final Set<Collector> collectors;
-
-  private boolean processingLog = false;
-  private LoggingHandler loggingHandler;
+  private void scheduleCleanUp(Scheduler scheduler) {
+    scheduler.schedule(HOURLY, this::cleanUp);
+  }
 }

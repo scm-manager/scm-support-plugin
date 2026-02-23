@@ -19,13 +19,43 @@ import { useTranslation } from "react-i18next";
 import { Button, Level, Loading, Notification, Subtitle, Title, useDocumentTitle } from "@scm-manager/ui-core";
 import { apiClient, DownloadButton } from "@scm-manager/ui-components";
 import { Link } from "@scm-manager/ui-types";
+import { QueryClient, useMutation, useQuery, useQueryClient } from "react-query";
+import { ExistingPackage, ExistingPackageList } from "./ExistingPackageList";
+
+const SUPPORT_PACKAGES_QUERY_KEY = "supportPackages";
 
 type Props = {
-  informationLink?: string;
+  informationLink: string;
   logLink?: string;
+  existingLink: string;
 };
 
-const SupportPage: FC<Props> = ({ informationLink, logLink }) => {
+async function invalidateExistingPackages(queryClient: QueryClient) {
+  await queryClient.invalidateQueries(SUPPORT_PACKAGES_QUERY_KEY);
+}
+
+export const useDeletePackage = () => {
+  const queryClient = useQueryClient();
+  const { mutate, isLoading, error, data } = useMutation<unknown, Error, ExistingPackage>(
+    (existingPackage) => {
+      const deleteUrl = (existingPackage._links.self as Link).href;
+      return apiClient.delete(deleteUrl);
+    },
+    {
+      onSuccess: async (_, branch) => invalidateExistingPackages(queryClient),
+    },
+  );
+  return {
+    remove: (existingPackage: ExistingPackage) => {
+      mutate(existingPackage);
+    },
+    isLoading,
+    error,
+    isDeleted: !!data,
+  };
+};
+
+const SupportPage: FC<Props> = ({ informationLink, logLink, existingLink }) => {
   const [t] = useTranslation("plugins");
 
   const [startLogLink, setStartLogLink] = useState<Link | undefined>(undefined);
@@ -34,6 +64,16 @@ const SupportPage: FC<Props> = ({ informationLink, logLink }) => {
   const [startLogFailed, setStartLogFailed] = useState<boolean>(false);
   const [stopLogSuccess, setStopLogSuccess] = useState<boolean>(false);
   const [processingLog, setProcessingLog] = useState<boolean>(false);
+  const queryClient = useQueryClient();
+
+  const {
+    data: existingPackages,
+    isLoading: isLoadingExistingPackages,
+    error: errorExistingPackages,
+  } = useQuery<ExistingPackage, Error>({
+    queryKey: SUPPORT_PACKAGES_QUERY_KEY,
+    queryFn: () => apiClient.get(existingLink).then((response) => response.json()),
+  });
 
   useDocumentTitle(t("scm-support-plugin.title"));
 
@@ -46,13 +86,14 @@ const SupportPage: FC<Props> = ({ informationLink, logLink }) => {
   const fetchLogStatus = () => {
     apiClient
       .get(logLink!)
-      .then(result => result.json())
-      .then(logLinks => {
+      .then((result) => result.json())
+      .then((logLinks) => {
         setStartLogLink(logLinks._links.startLog);
         setStopLogLink(logLinks._links.stopLog);
         setProcessingLog(logLinks.processingLog);
+        invalidateExistingPackages(queryClient);
 
-        if (processingLog) {
+        if (logLinks.processingLog) {
           updateLogStatusAfterWait();
         }
       });
@@ -60,10 +101,11 @@ const SupportPage: FC<Props> = ({ informationLink, logLink }) => {
 
   const updateLogStatusAfterWait = async () => {
     setTimeout(
-      function() {
+      function () {
         fetchLogStatus();
+        invalidateExistingPackages(queryClient);
       }.bind(this),
-      1000
+      1000,
     );
   };
 
@@ -98,8 +140,8 @@ const SupportPage: FC<Props> = ({ informationLink, logLink }) => {
 
   const startLog = () => {
     apiClient
-      .post((startLogLink as Link)?.href, "")
-      .then(result => {
+      .post((startLogLink as Link).href, "")
+      .then((result) => {
         const startLogSuccess = result.status === 204;
         const startLogFailed = result.status !== 204;
 
@@ -108,7 +150,7 @@ const SupportPage: FC<Props> = ({ informationLink, logLink }) => {
         setStopLogSuccess(false);
         fetchLogStatus();
       })
-      .catch(err => {
+      .catch((err) => {
         setStartLogFailed(true);
         setStartLogSuccess(false);
         setStopLogSuccess(false);
@@ -122,7 +164,7 @@ const SupportPage: FC<Props> = ({ informationLink, logLink }) => {
     setStopLogSuccess(true);
     setStopLogLink(undefined);
     setProcessingLog(true);
-    updateLogStatusAfterWait().then(r => console.log(r));
+    updateLogStatusAfterWait().then((r) => console.log(r));
     return true;
   };
 
@@ -141,7 +183,22 @@ const SupportPage: FC<Props> = ({ informationLink, logLink }) => {
             <li>{t("scm-support-plugin.collect.helpItem.stackTrace")}</li>
           </ul>
         </div>
-        <Level right={<DownloadButton displayName={t("scm-support-plugin.collect.button")} url={informationLink} />} />
+        <Level
+          right={
+            <DownloadButton
+              displayName={t("scm-support-plugin.collect.button")}
+              url={informationLink}
+              onClick={() => {
+                setTimeout(
+                  function () {
+                    invalidateExistingPackages(queryClient);
+                  }.bind(this),
+                  5000,
+                );
+              }}
+            />
+          }
+        />
       </div>
     </div>
   ) : null;
@@ -185,6 +242,16 @@ const SupportPage: FC<Props> = ({ informationLink, logLink }) => {
     </div>
   );
 
+  const existingPackagesTable = isLoadingExistingPackages ? (
+    <Loading />
+  ) : errorExistingPackages ? (
+    <Notification type="warning">
+      {t("scm-support-plugin.existingPackages.loadingError")}: {errorExistingPackages.message}
+    </Notification>
+  ) : (
+    <ExistingPackageList existingPackages={existingPackages!._embedded!.supportPackages as Array<ExistingPackage>} />
+  );
+
   return (
     <>
       <Title>{t("scm-support-plugin.title")}</Title>
@@ -192,6 +259,9 @@ const SupportPage: FC<Props> = ({ informationLink, logLink }) => {
       {message}
       {informationPart}
       {logPart}
+      <hr />
+      <Subtitle>{t("scm-support-plugin.existingPackages.title")}</Subtitle>
+      {existingPackagesTable}
     </>
   );
 };

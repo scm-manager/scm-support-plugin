@@ -19,6 +19,7 @@ package sonia.scm.support;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
 import com.google.inject.Inject;
+import de.otto.edison.hal.HalRepresentation;
 import de.otto.edison.hal.Link;
 import de.otto.edison.hal.Links;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -27,27 +28,28 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
+import jakarta.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sonia.scm.api.v2.resources.ErrorDto;
 import sonia.scm.store.Blob;
 import sonia.scm.web.VndMediaType;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-/**
- * @author Sebastian Sdorra
- */
 @OpenAPIDefinition(tags = {
   @Tag(name = "Support Plugin", description = "Support plugin provided endpoints")
 })
@@ -57,10 +59,19 @@ public class SupportResource {
   private static final Logger log = LoggerFactory.getLogger(SupportResource.class);
   private static final String MEDIA_TYPE_ZIP = "application/zip";
 
+  private final SupportManager supportManager;
+  private final SupportLinks links;
+  private final ExistingPackageMapper existingPackageMapper;
+  private final SupportPackageCollectionToDtoMapper collectionToDtoMapper;
+
   @Inject
-  public SupportResource(SupportManager supportManager, SupportLinks links) {
+  SupportResource(SupportManager supportManager, SupportLinks links, ExistingPackageMapper existingPackageMapper,
+                  SupportPackageCollectionToDtoMapper collectionToDtoMapper
+  ) {
     this.supportManager = supportManager;
     this.links = links;
+    this.existingPackageMapper = existingPackageMapper;
+    this.collectionToDtoMapper = collectionToDtoMapper;
   }
 
   @GET
@@ -84,10 +95,10 @@ public class SupportResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public Response createSupportFile() {
+  public Response createSupportFile(@Context UriInfo uriInfo) {
     SupportPermissions.checkReadInformation();
     try {
-      return createBlobResponse(supportManager.collectSupportData());
+      return createBlobResponse(uriInfo, supportManager.collectSupportData());
     } catch (Exception e) {
       return Response.ok("Could not create information package.\n" + e, MediaType.TEXT_PLAIN_TYPE).build();
     }
@@ -114,11 +125,11 @@ public class SupportResource {
       schema = @Schema(implementation = ErrorDto.class)
     )
   )
-  public Response disableTraceLogging() {
+  public Response disableTraceLogging(@Context UriInfo uriInfo) {
     SupportPermissions.checkStartLog();
     log.info("disable trace log");
     try {
-      return createBlobResponse(supportManager.disableTraceLogging());
+      return createBlobResponse(uriInfo, supportManager.disableTraceLogging());
     } catch (Exception e) {
       return Response.ok("Could not create trace log package.\n" + e, MediaType.TEXT_PLAIN_TYPE).build();
     }
@@ -183,28 +194,61 @@ public class SupportResource {
       .build();
   }
 
-  private Response createBlobResponse(Blob blob) {
-    //J-
-    return Response.ok(
-      new BlobStreamingOutput(blob)
-    )
-      .header(
-        "Content-Disposition",
-        "attachment; filename=\"".concat(blob.getId()).concat(".zip\"")
-      )
-      .build();
-    //J+
+  @GET
+  @Path("packages")
+  @Produces(MediaType.APPLICATION_JSON)
+  public HalRepresentation getExistingPackages(@Context UriInfo uriInfo) {
+    SupportPermissions.checkReadInformation();
+    return collectionToDtoMapper.map(supportManager.getAll());
   }
 
-  //~--- inner classes --------------------------------------------------------
+  @GET
+  @Path("packages/{id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public SupportPackageDto getExistingPackage(@PathParam("id") String id) {
+    SupportPermissions.checkReadInformation();
+    return existingPackageMapper.map(supportManager.get(id));
+  }
+
+  @GET
+  @Path("packages/{id}/download")
+  @Produces(MEDIA_TYPE_ZIP)
+  public Response downloadExistingPackage(@Context UriInfo uriInfo, @PathParam("id") String id) {
+    SupportPermissions.checkReadInformation();
+    return createBlobResponse(uriInfo, supportManager.download(id));
+  }
+
+  @DELETE
+  @Path("packages/{id}")
+  @Produces(MediaType.APPLICATION_JSON)
+  public void deleteExistingPackage(@PathParam("id") String id) {
+    SupportPermissions.checkReadInformation();
+    supportManager.delete(id);
+  }
+
+  private Response createBlobResponse(UriInfo uriInfo, Blob blob) {
+    boolean traceOnly = blob.getId().startsWith("trace-only");
+    MediaType mediaType = traceOnly ? MediaType.TEXT_PLAIN_TYPE : new MediaType("application", "zip");
+    String fileName = uriInfo.getBaseUri().getHost() + "_" + blob.getId();
+    if (traceOnly) {
+      fileName += ".txt";
+    } else {
+      fileName += ".zip";
+    }
+    return Response.ok(
+      new BlobStreamingOutput(blob), mediaType
+    )
+      .header(
+        "Content-Disposition", "attachment; filename=\"" + fileName + '"'
+      )
+      .build();
+  }
 
   public static class BlobStreamingOutput implements StreamingOutput {
 
     public BlobStreamingOutput(Blob blob) {
       this.blob = blob;
     }
-
-    //~--- methods ------------------------------------------------------------
 
     @Override
     public void write(OutputStream output)
@@ -221,7 +265,4 @@ public class SupportResource {
 
     private final Blob blob;
   }
-
-  private final SupportManager supportManager;
-  private final SupportLinks links;
 }

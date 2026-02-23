@@ -50,4 +50,9 @@ class SupportLinks {
     LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), SupportResource.class);
     return linkBuilder.method("disableTraceLogging").parameters().href();
   }
+
+  String createExistingLink() {
+    LinkBuilder linkBuilder = new LinkBuilder(scmPathInfoStore.get().get(), SupportResource.class);
+    return linkBuilder.method("getExistingPackages").parameters().href();
+  }
 }

@@ -22,6 +22,27 @@
       "startFailed": "Logging konnte nicht gestartet werden.",
       "stopSuccess": "Logging wurde erfolgreich beendet.",
       "loading": "Logs werden verarbeitet..."
+    },
+    "existingPackages": {
+      "title":"Existierende Support-Pakete",
+      "types": {
+        "trace": "Paket mit Trace-Logs",
+        "trace-only": "Abgebrochenes Trace-Log",
+        "trace-running": "Laufendes Trace-Log",
+        "simple": "Paket mit System-Informationen",
+        "unknown": "Altes unbekanntes Paket"
+      },
+      "noPackages": "Keine Support-Pakete vorhanden",
+      "cleanUpMessage": "Support-Pakete werden nach einer Woche automatisch gelöscht.",
+      "loadingError": "Die existierenden Support-Pakete konnten nicht geladen werden",
+      "delete": {
+        "title": "Löschen",
+        "message": "Soll das Support Paket wirklich gelöscht werden?",
+        "confirmAlert": {
+          "submit": "Paket Löschen",
+          "cancel": "Abbrechen"
+        }
+      }
     }
   },
   "permissions": {

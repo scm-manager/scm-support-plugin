@@ -20,15 +20,18 @@ import { supportPredicate } from "./supportPredicate";
 describe("test predicate", () => {
   const exec = (links: Links) => {
     return supportPredicate({
-      links
+      links,
     });
   };
 
   it("should return true", () => {
     const result = exec({
-      supportInformation: {
-        href: "http://..."
-      }
+      support: [
+        {
+          name: "information",
+          href: "http://...",
+        },
+      ],
     });
     expect(result).toBe(true);
   });
@@ -36,8 +39,8 @@ describe("test predicate", () => {
   it("should return false with other links", () => {
     const result = exec({
       otherLink: {
-        href: "http://..."
-      }
+        href: "http://...",
+      },
     });
     expect(result).toBe(false);
   });

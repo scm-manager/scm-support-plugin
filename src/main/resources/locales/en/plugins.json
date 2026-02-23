@@ -22,6 +22,27 @@
       "startFailed": "Log could not be started",
       "stopSuccess": "Log successfully stopped",
       "loading": "Processing logs..."
+    },
+    "existingPackages": {
+      "title":"Existing Support Packages",
+      "noPackages": "No existing support packages found",
+      "cleanUpMessage": "Packages will be deleted automatically after one week.",
+      "loadingError": "Error loading existing packages",
+      "types": {
+        "trace": "Package with trace logs",
+        "trace-only": "Aborted trace log",
+        "trace-running": "Running trace log",
+        "simple": "Package with system information",
+        "unknown": "Old unknown package"
+      },
+      "delete": {
+        "title": "Delete",
+        "message": "Really delete this support package?",
+        "confirmAlert": {
+          "submit": "Delete package",
+          "cancel": "Cancel"
+        }
+      }
     }
   },
   "permissions": {

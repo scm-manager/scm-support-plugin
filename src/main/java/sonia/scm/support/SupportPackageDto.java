@@ -14,12 +14,24 @@
  * along with this program. If not, see https://www.gnu.org/licenses/.
  */
 
-import { Links } from "@scm-manager/ui-types";
+package sonia.scm.support;
 
-export type PredicateProps = {
-  links: Links;
-};
+import de.otto.edison.hal.HalRepresentation;
+import de.otto.edison.hal.Links;
+import lombok.Data;
 
-export const supportPredicate = ({ links }: PredicateProps) => {
-  return !!(links && links.support);
-};
+import java.time.Instant;
+
+@Data
+public class SupportPackageDto extends HalRepresentation {
+
+  private String type;
+  private Instant creationDate;
+  private String createdBy;
+  private long size;
+  private boolean running;
+
+  public SupportPackageDto(Links links) {
+    super(links);
+  }
+}

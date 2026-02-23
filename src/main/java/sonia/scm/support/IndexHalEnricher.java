@@ -16,14 +16,13 @@
 
 package sonia.scm.support;
 
+import jakarta.inject.Inject;
 import sonia.scm.api.v2.resources.Enrich;
-import sonia.scm.api.v2.resources.Index;
 import sonia.scm.api.v2.resources.HalAppender;
 import sonia.scm.api.v2.resources.HalEnricher;
 import sonia.scm.api.v2.resources.HalEnricherContext;
+import sonia.scm.api.v2.resources.Index;
 import sonia.scm.plugin.Extension;
-
-import jakarta.inject.Inject;
 
 @Extension
 @Enrich(Index.class)
@@ -39,10 +38,13 @@ public class IndexHalEnricher implements HalEnricher {
   @Override
   public void enrich(HalEnricherContext context, HalAppender appender) {
     if (SupportPermissions.isPermittedToReadInformation()) {
-      appender.appendLink("supportInformation", links.createInformationLink());
-    }
-    if (SupportPermissions.isPermittedToStartTrace()) {
-      appender.appendLink("logging", links.createLogStatusLink());
+      HalAppender.LinkArrayBuilder builder = appender.linkArrayBuilder("support")
+        .append("information", links.createInformationLink())
+        .append("existing", links.createExistingLink());
+      if (SupportPermissions.isPermittedToStartTrace()) {
+        builder.append("logging", links.createLogStatusLink());
+      }
+      builder.build();
     }
   }
 }

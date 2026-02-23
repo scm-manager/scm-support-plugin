@@ -22,80 +22,58 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.OutputStreamAppender;
-
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Closeables;
-
+import org.apache.shiro.SecurityUtils;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.LoggerFactory;
-
 import sonia.scm.store.Blob;
 import sonia.scm.store.BlobStore;
-
-//~--- JDK imports ------------------------------------------------------------
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
+import java.time.Instant;
+import java.util.Optional;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-/**
- *
- * @author Sebastian Sdorra
- */
-public class SupportHandler implements Closeable
-{
+public class SupportHandler implements Closeable {
 
-  /** Field description */
   private static final String PATTERN =
     "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%-10X{transaction_id}] %-5level %logger - %msg%n";
 
-  //~--- constructors ---------------------------------------------------------
+  private final BlobStore blobStore;
+  private final String type;
 
-  /**
-   * Constructs ...
-   *
-   *
-   * @param blobStore
-   */
-  public SupportHandler(BlobStore blobStore)
-  {
+  private Blob loggingBlob;
+  private OutputStream loggingOutputStream;
+  private OutputStreamAppender<ILoggingEvent> outputStreamAppender;
+  private Blob zipBlob;
+  private ZipOutputStream zipOutputStream;
+
+  public SupportHandler(BlobStore blobStore, String type) {
     this.blobStore = blobStore;
+    this.type = type;
   }
 
-  //~--- methods --------------------------------------------------------------
-
-  /**
-   * Method description
-   *
-   *
-   * @throws IOException
-   */
   @Override
-  public void close() throws IOException
-  {
-    if (outputStreamAppender != null)
-    {
+  public void close() throws IOException {
+    if (outputStreamAppender != null) {
       outputStreamAppender.stop();
       Closeables.close(loggingOutputStream, true);
       loggingBlob.commit();
 
-      if (zipOutputStream != null)
-      {
+      if (zipOutputStream != null) {
         zipOutputStream.putNextEntry(new ZipEntry("scm-manager.log"));
 
         InputStream input = null;
 
-        try
-        {
+        try {
           input = loggingBlob.getInputStream();
           ByteStreams.copy(input, zipOutputStream);
-        }
-        finally
-        {
+        } finally {
           Closeables.close(input, true);
           zipOutputStream.closeEntry();
         }
@@ -107,92 +85,45 @@ public class SupportHandler implements Closeable
     Closeables.close(zipOutputStream, true);
   }
 
-  //~--- get methods ----------------------------------------------------------
-
-  /**
-   * Method description
-   *
-   *
-   * @return
-   */
-  public LoggerContext getLoggerContext()
-  {
+  public LoggerContext getLoggerContext() {
     ILoggerFactory loggerFactory = LoggerFactory.getILoggerFactory();
 
-    if (!(loggerFactory instanceof LoggerContext))
-    {
+    if (!(loggerFactory instanceof LoggerContext)) {
       throw new IllegalStateException();
     }
 
     return (LoggerContext) loggerFactory;
   }
 
-  /**
-   * Method description
-   *
-   *
-   * @return
-   *
-   * @throws IOException
-   */
-  public OutputStreamAppender<ILoggingEvent> getOutputStreamAppender()
-    throws IOException
-  {
-    if (outputStreamAppender == null)
-    {
+  public OutputStreamAppender<ILoggingEvent> getOutputStreamAppender() throws IOException {
+    if (outputStreamAppender == null) {
       outputStreamAppender = createOutputStreamAppender();
     }
 
     return outputStreamAppender;
   }
 
-  /**
-   * Method description
-   *
-   *
-   * @return
-   */
-  public Blob getZipBlob()
-  {
-    if (zipBlob == null)
-    {
-      zipBlob = blobStore.create();
+  Optional<String> currentId() {
+    return Optional.ofNullable(loggingBlob).map(Blob::getId);
+  }
+
+  Blob getZipBlob() {
+    if (zipBlob == null) {
+      zipBlob = blobStore.create(createBlobId(type));
     }
 
     return zipBlob;
   }
 
-  /**
-   * Method description
-   *
-   *
-   * @return
-   *
-   * @throws IOException
-   */
-  public ZipOutputStream getZipOutputStream() throws IOException
-  {
-    if (zipOutputStream == null)
-    {
+  public ZipOutputStream getZipOutputStream() throws IOException {
+    if (zipOutputStream == null) {
       zipOutputStream = new ZipOutputStream(getZipBlob().getOutputStream());
     }
 
     return zipOutputStream;
   }
 
-  //~--- methods --------------------------------------------------------------
-
-  /**
-   * Method description
-   *
-   *
-   * @return
-   *
-   * @throws IOException
-   */
-  private OutputStreamAppender<ILoggingEvent> createOutputStreamAppender()
-    throws IOException
-  {
+  private OutputStreamAppender<ILoggingEvent> createOutputStreamAppender() throws IOException {
     LoggerContext loggerContext = getLoggerContext();
 
     PatternLayoutEncoder encoder = new PatternLayoutEncoder();
@@ -201,8 +132,7 @@ public class SupportHandler implements Closeable
     encoder.setPattern(PATTERN);
     encoder.start();
 
-    OutputStreamAppender<ILoggingEvent> appender =
-      new OutputStreamAppender<ILoggingEvent>();
+    OutputStreamAppender<ILoggingEvent> appender = new OutputStreamAppender<>();
 
     appender.setName("Support Appender");
     appender.setContext(loggerContext);
@@ -214,59 +144,23 @@ public class SupportHandler implements Closeable
     return appender;
   }
 
-  //~--- get methods ----------------------------------------------------------
-
-  /**
-   * Method description
-   *
-   *
-   * @return
-   */
-  private Blob getLoggingBlob()
-  {
-    if (loggingBlob == null)
-    {
-      loggingBlob = blobStore.create();
+  private Blob getLoggingBlob() {
+    if (loggingBlob == null) {
+      loggingBlob = blobStore.create(createBlobId("trace-only"));
     }
 
     return loggingBlob;
   }
 
-  /**
-   * Method description
-   *
-   *
-   * @return
-   *
-   * @throws IOException
-   */
-  private OutputStream getLoggingOutputStream() throws IOException
-  {
-    if (loggingOutputStream == null)
-    {
+  private String createBlobId(String type) {
+    return String.format("%s_%s_%s", type, Instant.now(), SecurityUtils.getSubject().getPrincipal());
+  }
+
+  private OutputStream getLoggingOutputStream() throws IOException {
+    if (loggingOutputStream == null) {
       loggingOutputStream = getLoggingBlob().getOutputStream();
     }
 
     return loggingOutputStream;
   }
-
-  //~--- fields ---------------------------------------------------------------
-
-  /** Field description */
-  private final BlobStore blobStore;
-
-  /** Field description */
-  private Blob loggingBlob;
-
-  /** Field description */
-  private OutputStream loggingOutputStream;
-
-  /** Field description */
-  private OutputStreamAppender<ILoggingEvent> outputStreamAppender;
-
-  /** Field description */
-  private Blob zipBlob;
-
-  /** Field description */
-  private ZipOutputStream zipOutputStream;
 }

@@ -20,8 +20,10 @@ import com.google.inject.util.Providers;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import sonia.scm.api.v2.resources.HalAppender;
@@ -55,39 +57,44 @@ class IndexHalEnricherTest {
   }
 
   @Test
-  void shouldAppendInformationLinkWhenPermitted() {
-    when(subject.isPermitted("support:information")).thenReturn(true);
-
-    enricher.enrich(null, appender);
-
-    verify(appender).appendLink("supportInformation", "/v2/plugins/support");
-  }
-
-  @Test
   void shouldNotAppendInformationLinkWhenNotPermitted() {
-    when(subject.isPermitted("support:information")).thenReturn(false);
-
-    enricher.enrich(null, appender);
-
-    verify(appender, never()).appendLink(any(), any());
-  }
-
-  @Test
-  void shouldAppendTraceLinkWhenPermitted() {
-    when(subject.isPermitted(anyString())).thenReturn(false);
-    when(subject.isPermitted("support:logging")).thenReturn(true);
-
-    enricher.enrich(null, appender);
-
-    verify(appender).appendLink("logging", "/v2/plugins/support/logging");
-  }
-
-  @Test
-  void shouldNotAppendLinksWhenNotPermitted() {
     when(subject.isPermitted(anyString())).thenReturn(false);
 
     enricher.enrich(null, appender);
 
+    verify(appender, never()).linkArrayBuilder(any());
     verify(appender, never()).appendLink(any(), any());
+  }
+
+  @Nested
+  class WithPermissions {
+
+    @Mock(answer = Answers.RETURNS_SELF)
+    private HalAppender.LinkArrayBuilder linkArrayBuilder;
+
+    @BeforeEach
+    void setUp() {
+      when(appender.linkArrayBuilder("support")).thenReturn(linkArrayBuilder);
+    }
+
+    @Test
+    void shouldAppendInformationLinkWhenPermitted() {
+      when(subject.isPermitted("support:information")).thenReturn(true);
+
+      enricher.enrich(null, appender);
+
+      verify(linkArrayBuilder).append("information", "/v2/plugins/support");
+    }
+
+    @Test
+    void shouldAppendTraceLinkWhenPermitted() {
+      when(subject.isPermitted("support:information")).thenReturn(true);
+      when(subject.isPermitted("support:logging")).thenReturn(true);
+
+      enricher.enrich(null, appender);
+
+      verify(linkArrayBuilder).append("information", "/v2/plugins/support");
+      verify(linkArrayBuilder).append("logging", "/v2/plugins/support/logging");
+    }
   }
 }

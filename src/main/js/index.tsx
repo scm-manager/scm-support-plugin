@@ -17,10 +17,14 @@
 import React from "react";
 import { Route } from "react-router-dom";
 import { binder } from "@scm-manager/ui-extensions";
-import { Link } from "@scm-manager/ui-types";
+import { Link, Links } from "@scm-manager/ui-types";
 import SupportNavLink from "./SupportNavLink";
 import SupportPage from "./SupportPage";
 import { type PredicateProps, supportPredicate } from "./supportPredicate";
+
+const getLink = (links: Links, name: string) => {
+  return (links.support as Link[]).find((link) => link.name === name) as Link;
+};
 
 const SupportRoute = ({ links }: PredicateProps) => {
   return (
@@ -28,8 +32,9 @@ const SupportRoute = ({ links }: PredicateProps) => {
       path="/admin/support"
       render={() => (
         <SupportPage
-          informationLink={(links.supportInformation as Link)?.href}
-          logLink={(links.logging as Link)?.href}
+          informationLink={getLink(links, "information").href}
+          logLink={getLink(links, "logging")?.href}
+          existingLink={getLink(links, "existing").href}
         />
       )}
     />
