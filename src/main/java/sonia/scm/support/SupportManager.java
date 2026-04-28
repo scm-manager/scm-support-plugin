@@ -178,7 +178,7 @@ class SupportManager {
 
   private void cleanUp() {
     log.debug("clean up support packages");
-    Instant limit = Instant.now().minus(1, ChronoUnit.WEEKS);
+    Instant limit = Instant.now().minus(7, ChronoUnit.DAYS);
     getAll().stream()
       .filter(supportPackage -> limit.isAfter(supportPackage.getCreationDate()))
       .map(SupportPackage::getBlob)
