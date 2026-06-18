@@ -45,6 +45,6 @@ class SupportPackage {
     if (parts.length != 3) {
       return new SupportPackage("unknown", null, null, blob.getSize(), blob);
     }
-    return new SupportPackage(parts[0], Instant.parse(parts[1]), parts[2], blob.getSize(), blob);
+    return new SupportPackage(parts[0], FilenameTimestampMapper.fromString(parts[1]), parts[2], blob.getSize(), blob);
   }
 }

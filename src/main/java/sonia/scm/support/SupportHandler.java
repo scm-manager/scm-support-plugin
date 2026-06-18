@@ -153,7 +153,7 @@ public class SupportHandler implements Closeable {
   }
 
   private String createBlobId(String type) {
-    return String.format("%s_%s_%s", type, Instant.now(), SecurityUtils.getSubject().getPrincipal());
+    return String.format("%s_%s_%s", type, FilenameTimestampMapper.toString(Instant.now()), SecurityUtils.getSubject().getPrincipal());
   }
 
   private OutputStream getLoggingOutputStream() throws IOException {
