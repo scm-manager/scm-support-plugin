@@ -1,2 +1,0 @@
-- type: fixed
-  description: Filename with timestamp containing colons causes error on Windows systems
