@@ -17,18 +17,25 @@
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { SecondaryNavigationItem } from "@scm-manager/ui-components";
+import { useIndexLinks } from "@scm-manager/ui-api";
+import { supportPredicate } from "./supportPredicate";
 
 const SupportNavLink: FC = () => {
   const [t] = useTranslation("plugins");
+  const links = useIndexLinks();
 
-  return (
-    <SecondaryNavigationItem
-      to={`/admin/support`}
-      icon="fas fa-life-ring"
-      label={t("scm-support-plugin.navLink")}
-      title={t("scm-support-plugin.navLink")}
-    />
-  );
+  if (supportPredicate({ links })) {
+    return (
+      <SecondaryNavigationItem
+        to={`/admin/support`}
+        icon="fas fa-life-ring"
+        label={t("scm-support-plugin.navLink")}
+        title={t("scm-support-plugin.navLink")}
+      />
+    );
+  } else {
+    return;
+  }
 };
 
 export default SupportNavLink;

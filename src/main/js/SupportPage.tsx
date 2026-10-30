@@ -16,47 +16,59 @@
 
 import React, { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Button, Level, Loading, Notification, Subtitle, Title, useDocumentTitle } from "@scm-manager/ui-core";
-import { apiClient, DownloadButton } from "@scm-manager/ui-components";
-import { Link } from "@scm-manager/ui-types";
-import { QueryClient, useMutation, useQuery, useQueryClient } from "react-query";
+import {
+  Button,
+  ExternalLinkButton,
+  Icon,
+  Level,
+  Loading,
+  Notification,
+  Subtitle,
+  Title,
+  useDocumentTitle,
+} from "@scm-manager/ui-core";
+import { apiClient } from "@scm-manager/ui-components";
+import { Link, Links } from "@scm-manager/ui-types";
 import { ExistingPackage, ExistingPackageList } from "./ExistingPackageList";
+import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useIndexLinks } from "@scm-manager/ui-api";
+import { flushSync } from "react-dom";
 
 const SUPPORT_PACKAGES_QUERY_KEY = "supportPackages";
 
-type Props = {
-  informationLink: string;
-  logLink?: string;
-  existingLink: string;
-};
-
 async function invalidateExistingPackages(queryClient: QueryClient) {
-  await queryClient.invalidateQueries(SUPPORT_PACKAGES_QUERY_KEY);
+  await queryClient.invalidateQueries({ queryKey: [SUPPORT_PACKAGES_QUERY_KEY] });
 }
 
 export const useDeletePackage = () => {
   const queryClient = useQueryClient();
-  const { mutate, isLoading, error, data } = useMutation<unknown, Error, ExistingPackage>(
-    (existingPackage) => {
+
+  const mutation = useMutation<unknown, Error, ExistingPackage>({
+    mutationFn: (existingPackage) => {
       const deleteUrl = (existingPackage._links.self as Link).href;
       return apiClient.delete(deleteUrl);
     },
-    {
-      onSuccess: async (_, branch) => invalidateExistingPackages(queryClient),
-    },
-  );
+    onSuccess: () => invalidateExistingPackages(queryClient),
+  });
+
   return {
-    remove: (existingPackage: ExistingPackage) => {
-      mutate(existingPackage);
-    },
-    isLoading,
-    error,
-    isDeleted: !!data,
+    remove: mutation.mutate,
+    isLoading: mutation.isPending,
+    error: mutation.error,
+    isDeleted: !!mutation.data,
   };
 };
 
-const SupportPage: FC<Props> = ({ informationLink, logLink, existingLink }) => {
+const getLink = (links: Links, name: string) => {
+  return (links.support as Link[]).find((link) => link.name === name) as Link;
+};
+
+const SupportPage: FC = () => {
   const [t] = useTranslation("plugins");
+  const links = useIndexLinks();
+  const informationLink = getLink(links, "information").href;
+  const logLink = getLink(links, "logging")?.href;
+  const existingLink = getLink(links, "existing").href;
 
   const [startLogLink, setStartLogLink] = useState<Link | undefined>(undefined);
   const [stopLogLink, setStopLogLink] = useState<Link | undefined>(undefined);
@@ -71,7 +83,7 @@ const SupportPage: FC<Props> = ({ informationLink, logLink, existingLink }) => {
     isLoading: isLoadingExistingPackages,
     error: errorExistingPackages,
   } = useQuery<ExistingPackage, Error>({
-    queryKey: SUPPORT_PACKAGES_QUERY_KEY,
+    queryKey: [SUPPORT_PACKAGES_QUERY_KEY],
     queryFn: () => apiClient.get(existingLink).then((response) => response.json()),
   });
 
@@ -99,14 +111,11 @@ const SupportPage: FC<Props> = ({ informationLink, logLink, existingLink }) => {
       });
   };
 
-  const updateLogStatusAfterWait = async () => {
-    setTimeout(
-      function () {
-        fetchLogStatus();
-        invalidateExistingPackages(queryClient);
-      }.bind(this),
-      1000,
-    );
+  const updateLogStatusAfterWait = () => {
+    setTimeout(() => {
+      fetchLogStatus();
+      invalidateExistingPackages(queryClient);
+    }, 1000);
   };
 
   const createMessage = () => {
@@ -154,17 +163,18 @@ const SupportPage: FC<Props> = ({ informationLink, logLink, existingLink }) => {
         setStartLogFailed(true);
         setStartLogSuccess(false);
         setStopLogSuccess(false);
-        fetchLogStatus();
       });
   };
 
   const stopLog = () => {
-    setStartLogFailed(false);
-    setStartLogSuccess(false);
-    setStopLogSuccess(true);
-    setStopLogLink(undefined);
-    setProcessingLog(true);
-    updateLogStatusAfterWait().then((r) => console.log(r));
+    flushSync(() => {
+      setStartLogFailed(false);
+      setStartLogSuccess(false);
+      setStopLogSuccess(true);
+      setStopLogLink(undefined);
+      setProcessingLog(true);
+    });
+    updateLogStatusAfterWait();
     return true;
   };
 
@@ -185,9 +195,9 @@ const SupportPage: FC<Props> = ({ informationLink, logLink, existingLink }) => {
         </div>
         <Level
           right={
-            <DownloadButton
-              displayName={t("scm-support-plugin.collect.button")}
-              url={informationLink}
+            <ExternalLinkButton
+              variant="primary"
+              href={informationLink}
               onClick={() => {
                 setTimeout(
                   function () {
@@ -196,7 +206,10 @@ const SupportPage: FC<Props> = ({ informationLink, logLink, existingLink }) => {
                   5000,
                 );
               }}
-            />
+            >
+              <Icon>arrow-circle-down</Icon>
+              <span> {t("scm-support-plugin.collect.button")}</span>
+            </ExternalLinkButton>
           }
         />
       </div>
@@ -214,9 +227,14 @@ const SupportPage: FC<Props> = ({ informationLink, logLink, existingLink }) => {
   );
 
   const downloadButton = stopLogLink ? (
-    <DownloadButton displayName={t("scm-support-plugin.log.stopButton")} url={stopLogLink.href} onClick={stopLog} />
+    <ExternalLinkButton variant="primary" href={stopLogLink.href} onClick={stopLog}>
+      <Icon>arrow-circle-down</Icon>
+      <span>{t("scm-support-plugin.log.stopButton")}</span>
+    </ExternalLinkButton>
   ) : (
-    <DownloadButton displayName={t("scm-support-plugin.log.stopButton")} disabled={true} />
+    <Button variant="primary" disabled={true}>
+      <Icon>arrow-circle-down</Icon> <span>{t("scm-support-plugin.log.stopButton")}</span>
+    </Button>
   );
 
   const logPart = processingLog ? (

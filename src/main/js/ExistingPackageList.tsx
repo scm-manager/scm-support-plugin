@@ -16,10 +16,9 @@
 
 import React, { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardListBox, Icon } from "@scm-manager/ui-core";
+import { Card, CardListBox, DateFromNow, Dialog, Icon, Menu } from "@scm-manager/ui-core";
 import { HalRepresentation, Link } from "@scm-manager/ui-types";
-import { Dialog, Menu } from "@scm-manager/ui-overlays";
-import { DateFromNow, SmallLoadingSpinner } from "@scm-manager/ui-components";
+import { SmallLoadingSpinner } from "@scm-manager/ui-components";
 import { useDeletePackage } from "./SupportPage";
 
 export type ExistingPackage = HalRepresentation & {

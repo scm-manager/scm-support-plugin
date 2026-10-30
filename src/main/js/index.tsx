@@ -15,32 +15,15 @@
  */
 
 import React from "react";
-import { Route } from "react-router-dom";
 import { binder } from "@scm-manager/ui-extensions";
-import { Link, Links } from "@scm-manager/ui-types";
 import SupportNavLink from "./SupportNavLink";
 import SupportPage from "./SupportPage";
-import { type PredicateProps, supportPredicate } from "./supportPredicate";
 
-const getLink = (links: Links, name: string) => {
-  return (links.support as Link[]).find((link) => link.name === name) as Link;
-};
+const SupportRoute = () => ({
+  path: "support",
+  element:  <SupportPage/>
+});
 
-const SupportRoute = ({ links }: PredicateProps) => {
-  return (
-    <Route
-      path="/admin/support"
-      render={() => (
-        <SupportPage
-          informationLink={getLink(links, "information").href}
-          logLink={getLink(links, "logging")?.href}
-          existingLink={getLink(links, "existing").href}
-        />
-      )}
-    />
-  );
-};
+binder.bind("admin.route", SupportRoute);
 
-binder.bind("admin.route", SupportRoute, supportPredicate);
-
-binder.bind("admin.navigation", SupportNavLink, supportPredicate);
+binder.bind("admin.navigation", SupportNavLink);
